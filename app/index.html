@@ -121,12 +121,12 @@
   .student-sentence-row .sentence-text { font-size: 12px; line-height: 1.65; }
   .inline-blank-box { display: inline; padding: .04em .34em; border: 1.7px solid #1a1a2e; border-radius: 4px; background: linear-gradient(180deg, #fffdf7, #f7f0e4); margin: 0; box-sizing: border-box; font-weight: 700; color: #1a1a2e; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   .inline-blank-image { display: inline; }
-  .image-blank-token { display: inline; font-weight: 700; color: #1a1a2e; }
+  .image-blank-token { display: inline-block; position: relative; white-space: pre; vertical-align: baseline; font-weight: 700; color: #1a1a2e; }
   .image-blank-word,
-  .image-blank-space { display: inline; }
+  .image-blank-space { display: inline-block; }
   .image-blank-token.vocab-overlap { background: #dbeafe; color: #1e3a8a; border-radius: 4px; padding: .02em .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   .image-blank-token.grammar-overlap { background: #fef3c7; color: #92400e; border-radius: 4px; padding: .02em .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-  .image-blank-token.figurative-overlap { text-decoration-line: underline; text-decoration-color: #f97316; text-decoration-thickness: 2.5px; text-underline-offset: .18em; text-decoration-skip-ink: none; }
+  .image-blank-token.figurative-overlap::after { content: ""; position: absolute; left: 0; right: 0; bottom: .03em; border-bottom: 2.5px solid #f97316; pointer-events: none; }
   .inline-blank-line { display: inline-block; padding: .04em .34em; border: 1.7px solid #1a1a2e; border-radius: 4px; background: linear-gradient(180deg, #fffdf7, #f7f0e4); box-sizing: border-box; font-weight: 700; color: #1a1a2e; vertical-align: baseline; margin-bottom: .08em; }
   .inline-blank-line.continues-next { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right-color: transparent; }
   .inline-blank-line.continues-prev { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-color: transparent; }
