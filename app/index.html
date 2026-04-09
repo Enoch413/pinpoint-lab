@@ -293,7 +293,7 @@
       <input type="file" id="analysis-file" accept=".md,.markdown,text/markdown,text/plain" multiple>
       <div id="file-status" class="status"></div>
       <textarea id="analysis-input" rows="12" placeholder="여러 개의 분석표를 한 번에 붙여 넣어도 됩니다."></textarea>
-      <div class="hint">여러 MD 파일을 올리거나, 하나의 MD 안에 분석표가 여러 개 있어도 자동으로 지문별 탭을 만듭니다.</div>
+      <div class="hint">여러 템플릿 MD 파일을 올리거나, 하나의 MD 안에 `항목 | 내용` 분석표가 여러 개 있어도 자동으로 지문별 탭을 만듭니다.</div>
     </div>
 
     <div class="convert-panel">
@@ -301,7 +301,7 @@
         <div>
           <label class="input-label">05 출제포인트 원본 변환 <span>전체 텍스트를 붙여 넣어도 05 표만 읽습니다</span></label>
           <textarea id="convert-source-input" rows="10" placeholder="00~05 전체 텍스트나 05 표만 붙여 넣으면 템플릿 MD로 변환합니다."></textarea>
-          <div class="hint">00~04는 무시하고 `05. 출제 완전 분석` 표만 읽습니다. 반의어 가정과 정답 줄은 자동으로 제외합니다.</div>
+          <div class="hint">00~04는 무시하고 `출제 유형 | 포인트 내용` 형태의 05 표만 읽습니다. 반의어 가정과 정답 줄은 자동으로 제외합니다.</div>
         </div>
         <div>
           <label class="input-label">변환본 제목 <span>비우면 기본 제목을 사용합니다</span></label>
@@ -1117,6 +1117,27 @@ function parseTemplateSourceSections(markdown) {
   return sections;
 }
 
+function parseTableCellsFromLine(line) {
+  var trimmed = String(line || "").trim();
+  if (trimmed.indexOf("|") !== 0) return [];
+  return trimmed.split("|").slice(1, -1).map(function (cell) {
+    return cleanMdInline(cell).replace(/\s+/g, " ").trim();
+  });
+}
+
+function isConverterTargetTableHeader(line) {
+  var cells = parseTableCellsFromLine(line);
+  if (cells.length < 2) return false;
+  return (compactKey(cells[0]) === "출제유형" && compactKey(cells[1]) === "포인트내용") ||
+    (compactKey(cells[0]) === "항목" && compactKey(cells[1]) === "내용");
+}
+
+function isAnalysisTemplateTableHeader(line) {
+  var cells = parseTableCellsFromLine(line);
+  if (cells.length < 2) return false;
+  return compactKey(cells[0]) === "항목" && compactKey(cells[1]) === "내용";
+}
+
 function inferConvertTitle(raw) {
   var lines = normalizeCopiedAnalysisSource(raw).split("\n");
   var i;
@@ -1139,7 +1160,6 @@ function extractConverterBlocks(raw, sourceTitle) {
   var lines = text.split("\n");
   var blocks = [];
   var latestTitle = sourceTitle || "";
-  var collecting = false;
   var tableLines = [];
 
   function flushTable() {
@@ -1150,14 +1170,13 @@ function extractConverterBlocks(raw, sourceTitle) {
       blocks.push({ title: latestTitle || sourceTitle || "", sections: sections });
     }
     tableLines = [];
-    collecting = false;
   }
 
   lines.forEach(function (line) {
     var trimmed = line.trim();
     var headingMatch;
     if (!trimmed) {
-      if (collecting && tableLines.length) return;
+      if (tableLines.length) return;
       return;
     }
 
@@ -1173,25 +1192,16 @@ function extractConverterBlocks(raw, sourceTitle) {
       if (!/^0?\d+\./.test(headingMatch[1]) && !/출제 완전 분석/.test(headingMatch[1])) {
         latestTitle = headingMatch[1].trim();
       }
-      if (/^0?5\.\s*출제 완전 분석/.test(headingMatch[1]) || /^출제 완전 분석/.test(headingMatch[1])) {
-        collecting = true;
-      }
-      return;
-    }
-
-    if (/^0?5\.\s*출제 완전 분석/.test(trimmed) || /^출제 완전 분석/.test(trimmed)) {
-      flushTable();
-      collecting = true;
       return;
     }
 
     if (trimmed.indexOf("|") === 0) {
-      if (!collecting && !tableLines.length) return;
+      if (!tableLines.length && !isConverterTargetTableHeader(trimmed)) return;
       tableLines.push(trimmed);
       return;
     }
 
-    if (collecting && tableLines.length) {
+    if (tableLines.length) {
       flushTable();
     }
   });
@@ -1232,6 +1242,42 @@ function converterLines(value) {
   }).filter(Boolean);
 }
 
+function appendSummaryField(summary, field, value) {
+  var clean = cleanMdInline(value).replace(/^[:\-]\s*/, "").trim();
+  var separator = field === "answerOptions" ? " / " : " ";
+  if (!clean) return;
+  summary[field] = summary[field] ? summary[field] + separator + clean : clean;
+}
+
+function mapSummaryLabelToField(label) {
+  if (label === "요지") return "mainPoint";
+  if (label === "주제") return "topic";
+  if (label === "제목") return "title";
+  if (label === "한 문장 요약") return "oneSentence";
+  if (label === "영어 요약문") return "english";
+  if (label === "정답 가능 표현") return "answerOptions";
+  if (label === "풀이 전략") return "strategy";
+  return "";
+}
+
+function extractConverterItemMeta(head) {
+  var raw = cleanMdInline(head || "");
+  var starsMatch = raw.match(/[★☆]+/);
+  var sentenceMatch = raw.match(/\(([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮\d\s~\-]+)\)\s*$/);
+  var label = raw
+    .replace(/^\d+\)\s*/, "")
+    .replace(/^\(([★☆]+)\)\s*/, "")
+    .replace(/^[★☆]+\s*/, "")
+    .replace(/\(([①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮\d\s~\-]+)\)\s*$/, "")
+    .replace(/^["'“”‘’]+|["'“”‘’]+$/g, "")
+    .trim();
+  return {
+    stars: starsMatch ? starsMatch[0] : "★",
+    sentenceRef: sentenceMatch ? sentenceMatch[1].replace(/\s+/g, "") : "",
+    label: label
+  };
+}
+
 function splitConverterItemBlocks(value) {
   return normalizeCopiedAnalysisText(value).split(/\n\s*\n+/).map(function (block) {
     return block.trim();
@@ -1263,35 +1309,40 @@ function convertSummarySourceToTemplate(text) {
     answerOptions: "",
     strategy: ""
   };
+  var pendingField = "";
 
   lines.forEach(function (line) {
     var clean = line.replace(/^[-*]\s*/, "").trim();
-    var labelMatch = clean.match(/^\[?(요지|주제|제목|한 문장 요약|영어 요약문)\]?\s*:?\s*(.+)$/);
+    var labelMatch = clean.match(/^\[?(요지|주제|제목|한 문장 요약|영어 요약문)\]?\s*:?\s*(.*)$/);
+    var metaMatch = clean.match(/^\[?(정답 가능 표현|풀이 전략)\]?\s*:?\s*(.*)$/);
     var blankMatch;
+    var field;
     if (labelMatch) {
-      if (labelMatch[1] === "요지") summary.mainPoint = cleanMdInline(labelMatch[2]);
-      if (labelMatch[1] === "주제") summary.topic = cleanMdInline(labelMatch[2]);
-      if (labelMatch[1] === "제목") summary.title = cleanMdInline(labelMatch[2]);
-      if (labelMatch[1] === "한 문장 요약") summary.oneSentence = cleanMdInline(labelMatch[2]);
-      if (labelMatch[1] === "영어 요약문") summary.english = cleanMdInline(labelMatch[2]);
+      field = mapSummaryLabelToField(labelMatch[1]);
+      pendingField = field;
+      if (labelMatch[2]) appendSummaryField(summary, field, labelMatch[2]);
       return;
     }
 
-    blankMatch = clean.match(/^\(?([AB])\)?\s*:?\s*(.+)$/i);
+    if (metaMatch) {
+      field = mapSummaryLabelToField(metaMatch[1]);
+      pendingField = field;
+      if (metaMatch[2]) appendSummaryField(summary, field, metaMatch[2]);
+      return;
+    }
+
+    blankMatch = clean.match(/^\(?([AB])\)?\s*:?\s*(.*)$/i);
     if (blankMatch) {
-      if (blankMatch[1].toUpperCase() === "A") summary.blankA = cleanMdInline(blankMatch[2]);
-      if (blankMatch[1].toUpperCase() === "B") summary.blankB = cleanMdInline(blankMatch[2]);
+      if (pendingField === "answerOptions") {
+        appendSummaryField(summary, "answerOptions", "(" + blankMatch[1].toUpperCase() + ") " + blankMatch[2]);
+      } else {
+        pendingField = blankMatch[1].toUpperCase() === "A" ? "blankA" : "blankB";
+        if (blankMatch[2]) appendSummaryField(summary, pendingField, blankMatch[2]);
+      }
       return;
     }
 
-    if (/^정답 가능 표현\s*:/.test(clean)) {
-      summary.answerOptions = cleanMdInline(clean.replace(/^정답 가능 표현\s*:\s*/, ""));
-      return;
-    }
-
-    if (/^풀이 전략\s*:/.test(clean)) {
-      summary.strategy = cleanMdInline(clean.replace(/^풀이 전략\s*:\s*/, ""));
-    }
+    if (pendingField) appendSummaryField(summary, pendingField, clean);
   });
 
   return [
@@ -1311,11 +1362,10 @@ function convertVocabSourceToTemplate(text) {
   var items = [];
   splitConverterItemBlocks(text).forEach(function (block) {
     var lines = block.split("\n").map(function (line) { return line.trim(); }).filter(Boolean);
-    var head = cleanMdInline(lines[0] || "");
-    var match = head.match(/^([★☆]+)\s+(.+?)\s*\(([^)]+)\)$/);
+    var meta = extractConverterItemMeta(lines[0] || "");
     var reason = extractLineValue(lines, /^왜 벗어나는가\s*:\s*/);
-    if (!match || !reason) return;
-    items.push("(" + match[1] + ") " + safeTemplateSentenceRef(match[3]) + " " + wrapWithSafeQuotes(match[2], false) + " / 왜 벗어나는가: " + reason);
+    if (!meta.label || !reason) return;
+    items.push("(" + meta.stars + ") " + safeTemplateSentenceRef(meta.sentenceRef || lines[0]) + " " + wrapWithSafeQuotes(meta.label, false) + " / 왜 벗어나는가: " + reason);
   });
   return items.length ? items.join("<br><br>") : "없음";
 }
@@ -1543,6 +1593,10 @@ function extractAnalysisBlocks(raw, sourceName) {
 
   function flush() {
     if (!tableLines.length) return;
+    if (!isAnalysisTemplateTableHeader(tableLines[0])) {
+      tableLines = [];
+      return;
+    }
     var markdown = tableLines.join("\n");
     var sections = parseSections(markdown);
     if (Object.keys(sections).length) {
@@ -1564,6 +1618,7 @@ function extractAnalysisBlocks(raw, sourceName) {
       return;
     }
     if (trimmed.indexOf("|") === 0) {
+      if (!tableLines.length && !isAnalysisTemplateTableHeader(trimmed)) return;
       tableLines.push(trimmed);
       return;
     }
