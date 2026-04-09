@@ -121,10 +121,12 @@
   .student-sentence-row .sentence-text { font-size: 12px; line-height: 1.65; }
   .inline-blank-box { display: inline; padding: .04em .34em; border: 1.7px solid #1a1a2e; border-radius: 4px; background: linear-gradient(180deg, #fffdf7, #f7f0e4); margin: 0; box-sizing: border-box; font-weight: 700; color: #1a1a2e; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   .inline-blank-image { display: inline; }
-  .image-blank-word { display: inline; font-weight: 700; color: #1a1a2e; }
-  .image-blank-word.vocab-overlap { background: #dbeafe; color: #1e3a8a; border-radius: 4px; padding: .02em .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-  .image-blank-word.grammar-overlap { background: #fef3c7; color: #92400e; border-radius: 4px; padding: .02em .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-  .image-blank-word.figurative-overlap { text-decoration-line: underline; text-decoration-color: #f97316; text-decoration-thickness: 2.5px; text-underline-offset: .18em; text-decoration-skip-ink: none; }
+  .image-blank-token { display: inline; font-weight: 700; color: #1a1a2e; }
+  .image-blank-word,
+  .image-blank-space { display: inline; }
+  .image-blank-token.vocab-overlap { background: #dbeafe; color: #1e3a8a; border-radius: 4px; padding: .02em .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .image-blank-token.grammar-overlap { background: #fef3c7; color: #92400e; border-radius: 4px; padding: .02em .2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .image-blank-token.figurative-overlap { text-decoration-line: underline; text-decoration-color: #f97316; text-decoration-thickness: 2.5px; text-underline-offset: .18em; text-decoration-skip-ink: none; }
   .inline-blank-line { display: inline-block; padding: .04em .34em; border: 1.7px solid #1a1a2e; border-radius: 4px; background: linear-gradient(180deg, #fffdf7, #f7f0e4); box-sizing: border-box; font-weight: 700; color: #1a1a2e; vertical-align: baseline; margin-bottom: .08em; }
   .inline-blank-line.continues-next { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right-color: transparent; }
   .inline-blank-line.continues-prev { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-color: transparent; }
@@ -671,14 +673,11 @@ function figurativeMarkHtml(sourceText) {
   return '<span class="inline-figurative-mark">' + escapeHtml(compact) + '</span>';
 }
 
-function renderTextWithInlineMarks(text, vocabTargets, grammarTargets, figurativeTargets) {
+function buildInlineMarkRanges(text, vocabTargets, grammarTargets, figurativeTargets) {
   var source = String(text || "");
   var ranges = [];
-  var cursor = 0;
-  var html = "";
-
-  if (!source) return "";
-  if ((!vocabTargets || !vocabTargets.length) && (!grammarTargets || !grammarTargets.length) && (!figurativeTargets || !figurativeTargets.length)) return escapeHtml(source);
+  if (!source) return ranges;
+  if ((!vocabTargets || !vocabTargets.length) && (!grammarTargets || !grammarTargets.length) && (!figurativeTargets || !figurativeTargets.length)) return ranges;
 
   (vocabTargets || []).slice().sort(function (a, b) { return String(b).length - String(a).length; }).forEach(function (target) {
     var found = findHighlightRange(source, target, ranges);
@@ -711,9 +710,19 @@ function renderTextWithInlineMarks(text, vocabTargets, grammarTargets, figurativ
     }
   });
 
+  ranges.sort(function (a, b) { return a.start - b.start; });
+  return ranges;
+}
+
+function renderTextWithInlineMarks(text, vocabTargets, grammarTargets, figurativeTargets) {
+  var source = String(text || "");
+  var ranges = buildInlineMarkRanges(source, vocabTargets, grammarTargets, figurativeTargets);
+  var cursor = 0;
+  var html = "";
+
+  if (!source) return "";
   if (!ranges.length) return escapeHtml(source);
 
-  ranges.sort(function (a, b) { return a.start - b.start; });
   ranges.forEach(function (range) {
     html += escapeHtml(source.slice(cursor, range.start));
     html += range.kind === "figurative"
@@ -725,29 +734,53 @@ function renderTextWithInlineMarks(text, vocabTargets, grammarTargets, figurativ
   return html;
 }
 
-function blankTokenHtml(token, vocabTargets, grammarTargets, figurativeTargets) {
-  var text = String(token || "");
-  var classes = ["image-blank-word"];
-  var normalizedText = cleanMdInline(text).toLowerCase();
-  var hasVocabOverlap = (vocabTargets || []).some(function (target) {
-    return cleanMdInline(target).toLowerCase().indexOf(normalizedText) !== -1 || normalizedText.indexOf(cleanMdInline(target).toLowerCase()) !== -1;
+function findAllHighlightRanges(text, targets) {
+  var source = String(text || "");
+  var ranges = [];
+  (targets || []).slice().sort(function (a, b) { return String(b).length - String(a).length; }).forEach(function (target) {
+    var found = findHighlightRange(source, target, ranges);
+    if (found) ranges.push(found);
   });
-  var hasGrammarOverlap = (grammarTargets || []).some(function (target) {
-    return cleanMdInline(target).toLowerCase().indexOf(normalizedText) !== -1 || normalizedText.indexOf(cleanMdInline(target).toLowerCase()) !== -1;
-  });
-  var hasFigurativeOverlap = (figurativeTargets || []).some(function (target) {
-    return cleanMdInline(target).toLowerCase().indexOf(normalizedText) !== -1 || normalizedText.indexOf(cleanMdInline(target).toLowerCase()) !== -1;
-  });
-  if (hasVocabOverlap) classes.push("vocab-overlap");
-  if (hasGrammarOverlap) classes.push("grammar-overlap");
+  ranges.sort(function (a, b) { return a.start - b.start; });
+  return ranges;
+}
+
+function blankPieceHtml(text, isSpace, hasVocabOverlap, hasGrammarOverlap, hasFigurativeOverlap) {
+  var classes = ["image-blank-token", isSpace ? "image-blank-space" : "image-blank-word"];
+  if (!isSpace && hasVocabOverlap) classes.push("vocab-overlap");
+  if (!isSpace && hasGrammarOverlap) classes.push("grammar-overlap");
   if (hasFigurativeOverlap) classes.push("figurative-overlap");
   return '<span class="' + classes.join(" ") + '">' + escapeHtml(text) + '</span>';
 }
 
 function segmentedBlankBoxHtml(sourceText, vocabTargets, grammarTargets, figurativeTargets) {
-  var words = String(sourceText || "").trim().split(/\s+/).filter(Boolean);
-  return '<span class="inline-blank-image">' + words.map(function (token, index) {
-    return (index ? ' ' : '') + blankTokenHtml(token, vocabTargets || [], grammarTargets || [], figurativeTargets || []);
+  var source = String(sourceText || "").replace(/\s+/g, " ").trim();
+  var vocabRanges = findAllHighlightRanges(source, vocabTargets || []);
+  var grammarRanges = findAllHighlightRanges(source, grammarTargets || []);
+  var figurativeRanges = findAllHighlightRanges(source, figurativeTargets || []);
+  var pieces = source.match(/\S+|\s+/g) || [];
+  var cursor = 0;
+  return '<span class="inline-blank-image">' + pieces.map(function (piece) {
+    var start = cursor;
+    var end = start + piece.length;
+    var isSpace = !/\S/.test(piece);
+    var hasVocabOverlap = vocabRanges.some(function (range) {
+      return start < range.end && end > range.start;
+    });
+    var hasGrammarOverlap = grammarRanges.some(function (range) {
+      return start < range.end && end > range.start;
+    });
+    var hasFigurativeOverlap = figurativeRanges.some(function (range) {
+      return start < range.end && end > range.start;
+    });
+    cursor = end;
+    return blankPieceHtml(
+      piece,
+      isSpace,
+      !isSpace && hasVocabOverlap,
+      !isSpace && hasGrammarOverlap,
+      hasFigurativeOverlap
+    );
   }).join("") + '</span>';
 }
 
@@ -2546,19 +2579,19 @@ function buildImagePageElement(pageRecords, measureOnly) {
 
 function stabilizeImageBlankBoxes(root) {
   root.querySelectorAll(".inline-blank-image").forEach(function (wrapper) {
-    var words = Array.prototype.slice.call(wrapper.querySelectorAll(".image-blank-word"));
+    var tokens = Array.prototype.slice.call(wrapper.querySelectorAll(".image-blank-token"));
     var groups = [];
     var currentGroup = null;
 
-    if (!words.length) return;
+    if (!tokens.length) return;
 
-    words.forEach(function (word) {
-      var top = Math.round(word.getBoundingClientRect().top);
+    tokens.forEach(function (token) {
+      var top = Math.round(token.getBoundingClientRect().top);
       if (!currentGroup || Math.abs(currentGroup.top - top) > 1) {
-        currentGroup = { top: top, words: [] };
+        currentGroup = { top: top, tokens: [] };
         groups.push(currentGroup);
       }
-      currentGroup.words.push(word.cloneNode(true));
+      currentGroup.tokens.push(token.cloneNode(true));
     });
 
     wrapper.innerHTML = "";
@@ -2569,9 +2602,8 @@ function stabilizeImageBlankBoxes(root) {
         if (index < groups.length - 1) line.classList.add("continues-next");
         if (index > 0) line.classList.add("continues-prev");
       }
-      group.words.forEach(function (word, wordIndex) {
-        if (wordIndex) line.appendChild(document.createTextNode(" "));
-        line.appendChild(word);
+      group.tokens.forEach(function (token) {
+        line.appendChild(token);
       });
       wrapper.appendChild(line);
       if (index < groups.length - 1) wrapper.appendChild(document.createElement("br"));
