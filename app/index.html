@@ -997,9 +997,9 @@
     align-items: center;
     justify-content: center;
     height: 70%;
-    min-height: 0;
+    min-height: 360px;
     text-align: center;
-    gap: 12px;
+    gap: 0;
     color: #9a8a7a;
     border: none;
     border-radius: 0;
@@ -1024,12 +1024,12 @@
   }
 
   .empty-kicker {
-    font-family: inherit;
-    font-size: 12px;
+    font-family: "Lexend", "Plus Jakarta Sans", sans-serif;
+    font-size: 28px;
     font-weight: 700;
-    letter-spacing: normal;
-    text-transform: none;
-    color: #9a8a7a;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: #5a4a3a;
   }
 
   .empty-title {
@@ -1602,7 +1602,6 @@
 <body>
 <div id="header">
   <div class="header-copy">
-    <div class="header-kicker">analysis workspace</div>
     <h1>PINPOINT LAB</h1>
   </div>
   <div class="badge">WORKSPACE</div>
@@ -1610,12 +1609,6 @@
 
 <div id="layout">
   <div id="left">
-    <div class="left-hero">
-      <div class="left-hero-kicker">input</div>
-      <div class="left-hero-title">원문과 분석 자료를 한곳에서 차분하게 정리합니다.</div>
-      <div class="left-hero-copy">왼쪽에서 원문과 분석 MD를 입력하고, 오른쪽에서는 지문별 결과를 그대로 확인할 수 있습니다.</div>
-    </div>
-
     <div class="left-card">
       <label class="input-label">원문 입력 <span>한 줄 = 한 문장, 빈 줄 = 다음 지문</span></label>
       <textarea id="passage-input" rows="12" placeholder="첫번째 지문 1문장&#10;첫번째 지문 2문장&#10;&#10;두번째 지문 1문장&#10;두번째 지문 2문장"></textarea>
@@ -1672,8 +1665,6 @@
   <div id="right">
     <div id="empty">
       <div class="empty-kicker">READY TO BUILD</div>
-      <div class="empty-title">원문과 분석 MD를 넣으면 지문별 통합 자료를 만듭니다.</div>
-      <div class="empty-copy">여러 지문이 들어오면 `지문 1`, `지문 2`처럼 나뉘고, 각 탭에서 교사용과 학생용 레이아웃을 바로 정리할 수 있습니다.</div>
     </div>
 
     <div id="loading">
