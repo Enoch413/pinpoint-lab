@@ -2451,8 +2451,16 @@ function compactKey(value) {
   return cleanMdInline(value).replace(/\s+/g, "");
 }
 
+function stripLeadingSectionIndex(value) {
+  return cleanMdInline(value)
+    .replace(/^\s*[0-9]+\s*[.)]\s*/, "")
+    .replace(/^\s*\(?[0-9]+\)?\s*[-:]\s*/, "")
+    .replace(/^\s*[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]\s*[.)]?\s*/, "")
+    .trim();
+}
+
 function canonicalTemplateSectionName(value) {
-  var compact = compactKey(value);
+  var compact = compactKey(stripLeadingSectionIndex(value));
   if (!compact) return "";
   if (compact === "핵심내용재활용" || compact === "핵심내용") return "핵심 내용 재활용";
   if (compact === "어휘포인트" || compact === "어휘") return "어휘 포인트";
