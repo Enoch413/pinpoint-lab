@@ -1985,6 +1985,22 @@ function escapeRegex(value) {
   return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function buildLooseQuoteRegex(value) {
+  var pattern = "";
+  String(value || "").split("").forEach(function (char) {
+    if (char === "'" || char === "‘" || char === "’") {
+      pattern += "['‘’]";
+      return;
+    }
+    if (char === "\"" || char === "“" || char === "”") {
+      pattern += "[\"“”]";
+      return;
+    }
+    pattern += escapeRegex(char);
+  });
+  return new RegExp(pattern, "ig");
+}
+
 function rangesOverlap(start, end, ranges) {
   var i;
   for (i = 0; i < ranges.length; i += 1) {
@@ -2140,7 +2156,7 @@ function findHighlightRange(text, target, ranges) {
     var regex;
     var match;
     if (!candidate) continue;
-    regex = new RegExp(escapeRegex(candidate), "ig");
+    regex = buildLooseQuoteRegex(candidate);
     while ((match = regex.exec(text)) !== null) {
       var start = match.index;
       var end = start + match[0].length;
@@ -2170,7 +2186,7 @@ function findOverlappingRange(text, target, ranges) {
     var regex;
     var match;
     if (!candidate) continue;
-    regex = new RegExp(escapeRegex(candidate), "ig");
+    regex = buildLooseQuoteRegex(candidate);
     while ((match = regex.exec(text)) !== null) {
       var start = match.index;
       var end = start + match[0].length;
