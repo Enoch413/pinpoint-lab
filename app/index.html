@@ -4774,6 +4774,24 @@ function buildImagePageElement(pageRecords, measureOnly) {
   return page;
 }
 
+function getStudentCaptureWidth() {
+  var visibleSheet = document.querySelector("#record-view .sheet.student-sheet");
+  var recordView = document.getElementById("record-view");
+  if (visibleSheet) return Math.ceil(visibleSheet.getBoundingClientRect().width);
+  if (recordView) return Math.ceil(recordView.getBoundingClientRect().width || recordView.clientWidth || 0);
+  return 820;
+}
+
+function buildStudentCaptureElement(record, captureWidth) {
+  var wrapper = document.createElement("div");
+  wrapper.className = "student-screen-capture";
+  wrapper.style.width = Math.max(1, Math.ceil(captureWidth || 820)) + "px";
+  wrapper.style.background = "#ffffff";
+  wrapper.style.boxSizing = "border-box";
+  wrapper.innerHTML = buildRecordSheetHtml(record, "student", "screen");
+  return wrapper;
+}
+
 function stabilizeImageBlankBoxes(root) {
   root.querySelectorAll(".inline-blank-image").forEach(function (wrapper) {
     var tokens = Array.prototype.slice.call(wrapper.querySelectorAll(".image-blank-token"));
@@ -4851,6 +4869,51 @@ async function groupImageExportPages(targetRecords) {
   return pages;
 }
 
+async function renderStudentSheetToBlob(record, captureWidth) {
+  if (!record) throw new Error("저장할 지문을 찾지 못했습니다.");
+  if (typeof html2canvas !== "function") throw new Error("이미지 저장 라이브러리를 불러오지 못했습니다.");
+
+  var stage = document.getElementById("image-export-stage");
+  var stageWidth = Math.max(1, Math.ceil(captureWidth || getStudentCaptureWidth() || 820));
+  stage.innerHTML = "";
+  stage.style.width = stageWidth + "px";
+
+  var sheet = buildStudentCaptureElement(record, stageWidth);
+  stage.appendChild(sheet);
+
+  if (document.fonts && document.fonts.ready) {
+    try {
+      await document.fonts.ready;
+    } catch (error) {}
+  }
+  await waitForPaint();
+  stabilizeImageBlankBoxes(sheet);
+  await waitForPaint();
+
+  try {
+    var visualWidth = Math.ceil(sheet.scrollWidth);
+    var visualHeight = Math.ceil(sheet.scrollHeight);
+    var canvas = await html2canvas(sheet, {
+      backgroundColor: "#ffffff",
+      scale: 1,
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      removeContainer: true,
+      width: visualWidth,
+      height: visualHeight,
+      windowWidth: visualWidth,
+      windowHeight: visualHeight,
+      scrollX: 0,
+      scrollY: 0
+    });
+    return await canvasToBlob(canvas);
+  } finally {
+    stage.innerHTML = "";
+    stage.style.width = "";
+  }
+}
+
 async function renderImagePageToBlob(pageRecords) {
   if (!pageRecords.length) throw new Error("저장할 지문을 찾지 못했습니다.");
   if (typeof html2canvas !== "function") throw new Error("이미지 저장 라이브러리를 불러오지 못했습니다.");
@@ -4909,6 +4972,7 @@ async function startImageExport(mode) {
   var errorBox = document.getElementById("error-box");
   var buttonText = button.textContent;
   var targetRecords = mode === "all" ? records.slice() : [records[activeRecordIndex]];
+  var studentCaptureWidth = 0;
   var pageSets;
   var i;
 
@@ -4918,6 +4982,18 @@ async function startImageExport(mode) {
   button.textContent = "이미지 저장 중...";
 
   try {
+    if (activeViewMode === "student") {
+      studentCaptureWidth = getStudentCaptureWidth();
+      for (i = 0; i < targetRecords.length; i += 1) {
+        downloadBlob(
+          await renderStudentSheetToBlob(targetRecords[i], studentCaptureWidth),
+          buildImageFileName([targetRecords[i]], i, targetRecords.length)
+        );
+        if (targetRecords.length > 1) await new Promise(function (resolve) { setTimeout(resolve, 250); });
+      }
+      return;
+    }
+
     pageSets = mode === "all" ? await groupImageExportPages(targetRecords) : [targetRecords];
     for (i = 0; i < pageSets.length; i += 1) {
       downloadBlob(
