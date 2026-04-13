@@ -1450,6 +1450,10 @@
     padding: 16px;
   }
 
+  .legacy-inputs {
+    display: none;
+  }
+
   .convert-panel {
     margin-top: 14px;
   }
@@ -1597,6 +1601,482 @@
       font-size: 9px;
     }
   }
+
+  .student-sheet {
+    background: #ffffff;
+    border: 1px solid #d9e2e8;
+    border-radius: 24px;
+    box-shadow: none;
+  }
+
+  .student-sheet .sheet-head {
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #edf2f5;
+  }
+
+  .student-sheet .sheet-title {
+    font-family: "Plus Jakarta Sans", "Noto Sans KR", sans-serif;
+    font-size: 1.28rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #21343c;
+  }
+
+  .student-sheet .section {
+    margin-bottom: 20px;
+  }
+
+  .student-sheet .section-title {
+    font-family: "Plus Jakarta Sans", "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: #4b5d66;
+    border-bottom: 1px solid #dde5ea;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+  }
+
+  .student-sheet .summary-box {
+    background: #ffffff;
+    color: #23323a;
+    border: 1px solid #dbe3e8;
+    border-radius: 18px;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .student-summary-grid {
+    display: grid;
+  }
+
+  .student-summary-row {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 9px 14px;
+    border-bottom: 1px solid #eef2f4;
+  }
+
+  .student-summary-row:last-child {
+    border-bottom: none;
+  }
+
+  .student-summary-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #6b7780;
+  }
+
+  .student-summary-copy {
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.52;
+    color: #21313a;
+  }
+
+  .student-sheet .summary-english {
+    font-style: normal;
+    font-size: 13px;
+    line-height: 1.58;
+    color: #183941;
+  }
+
+  .student-sheet .summary-underline {
+    font-weight: inherit;
+  }
+
+  .student-summary-order-lines {
+    display: grid;
+    gap: 3px;
+  }
+
+  .student-summary-order-line {
+    font-size: 13px;
+    line-height: 1.46;
+    color: #2a3a43;
+  }
+
+  .student-sheet .student-sentence-box {
+    background: #ffffff;
+    border: 1px solid #dbe3e8;
+    border-radius: 18px;
+    padding: 2px 18px;
+    box-shadow: none;
+  }
+
+  .student-sheet .student-sentence-row {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 10px;
+    padding: 2px 0;
+    border-bottom: 1px solid #edf1f3;
+  }
+
+  .student-sheet .student-sentence-meta {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 5px;
+    width: 78px;
+    min-height: 0;
+  }
+
+  .student-sentence-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 2px;
+    border-radius: 7px;
+    border: 1px solid #d4dde3;
+    background: #f2f6f8;
+    color: #29424a;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .student-sheet .sentence-marker-group.student-markers {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 3px;
+    flex-wrap: wrap;
+    white-space: normal;
+    min-width: 0;
+  }
+
+  .student-sheet .sentence-marker {
+    min-width: 14px;
+    min-height: 16px;
+    padding: 1px 4px;
+    font-size: 8.5px;
+    box-shadow: none;
+    box-sizing: border-box;
+  }
+
+  .student-sheet .sentence-marker.marker-order {
+    background: #f4f6f8;
+    border: 1px solid #d7dee3;
+    color: #51616a;
+  }
+
+  .student-sheet .sentence-marker.marker-descriptive {
+    background: #f4f0ff;
+    border: 1px solid #ddd4f6;
+    color: #66549a;
+  }
+
+  .student-sheet .sentence-marker.marker-insert {
+    background: #edf6f3;
+    border: 1px solid #d1e2dc;
+    color: #37675f;
+  }
+
+  .student-sheet .student-sentence-row .sentence-text {
+    font-size: 14px;
+    line-height: 2.32;
+    color: #20313a;
+  }
+
+  .student-sheet .student-sentence-row .sentence-flow {
+    letter-spacing: 0;
+  }
+
+  .student-sheet .student-sentence-row .inline-blank-box,
+  .student-sheet .student-sentence-row .inline-blank-line {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1.43;
+    padding: .073em .254em;
+    border-width: 1.9px;
+  }
+
+  .student-sheet .student-sentence-row .image-blank-token.figurative-overlap::after {
+    bottom: -1.5pt;
+  }
+
+  .student-sheet .student-sentence-row .image-blank-token,
+  .student-sheet .student-sentence-row .inline-vocab-mark,
+  .student-sheet .student-sentence-row .inline-grammar-mark {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1.12;
+  }
+
+  .student-sheet .student-sentence-row .inline-figurative-mark {
+    font-weight: inherit;
+    text-decoration-thickness: 2px;
+  }
+
+  .student-sheet .student-sentence-row .image-blank-token.vocab-overlap,
+  .student-sheet .student-sentence-row .inline-vocab-mark {
+    padding: 0 .14em;
+  }
+
+  .student-sheet .student-sentence-row .image-blank-token.grammar-overlap,
+  .student-sheet .student-sentence-row .inline-grammar-mark {
+    padding: .005em .14em;
+  }
+
+  .student-sheet .student-sentence-row .inline-vocab-mark.figurative-overlap,
+  .student-sheet .student-sentence-row .inline-grammar-mark.figurative-overlap {
+    padding-left: 0;
+    padding-right: 0;
+    text-decoration-thickness: 2px;
+  }
+
+  .image-export-page .student-sheet .sheet-head,
+  body.printing-mode #print-area .student-sheet .sheet-head {
+    margin-bottom: 10px;
+    padding-bottom: 7px;
+  }
+
+  .image-export-page .student-sheet .section-title,
+  body.printing-mode #print-area .student-sheet .section-title {
+    font-size: 11px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .image-export-page .student-summary-row,
+  body.printing-mode #print-area .student-summary-row {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .image-export-page .student-summary-copy,
+  body.printing-mode #print-area .student-summary-copy {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .image-export-page .student-summary-order-line,
+  body.printing-mode #print-area .student-summary-order-line {
+    font-size: 11px;
+  }
+
+  .image-export-page .student-sheet .summary-english,
+  body.printing-mode #print-area .student-sheet .summary-english {
+    font-size: 11px;
+    line-height: 1.65;
+  }
+
+  .image-export-page .student-sheet .student-sentence-box,
+  body.printing-mode #print-area .student-sheet .student-sentence-box {
+    padding: 2px 10px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row,
+  body.printing-mode #print-area .student-sheet .student-sentence-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 7px;
+    padding: 10px 0;
+  }
+
+  .image-export-page .student-sheet .student-sentence-meta,
+  body.printing-mode #print-area .student-sheet .student-sentence-meta {
+    grid-template-columns: 20px minmax(0, 1fr);
+    column-gap: 4px;
+    width: 64px;
+  }
+
+  .image-export-page .student-sentence-number,
+  body.printing-mode #print-area .student-sentence-number {
+    width: 20px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 2px;
+    border-radius: 6px;
+    font-size: 8.5px;
+  }
+
+  .image-export-page .student-sheet .sentence-marker-group.student-markers,
+  body.printing-mode #print-area .student-sheet .sentence-marker-group.student-markers {
+    gap: 2px;
+  }
+
+  .image-export-page .student-sheet .sentence-marker,
+  body.printing-mode #print-area .student-sheet .sentence-marker {
+    min-width: 12px;
+    min-height: 14px;
+    padding: 1px 3px;
+    font-size: 7.5px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .sentence-text,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .sentence-text {
+    font-size: 12px;
+    line-height: 2.2;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .inline-blank-box,
+  .image-export-page .student-sheet .student-sentence-row .inline-blank-line,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .inline-blank-box,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .inline-blank-line {
+    font-size: inherit;
+    line-height: 1.65;
+    padding: .066em .226em;
+    border-width: 2.05px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token.figurative-overlap::after,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .image-blank-token.figurative-overlap::after {
+    bottom: -1.5pt;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token,
+  .image-export-page .student-sheet .student-sentence-row .inline-vocab-mark,
+  .image-export-page .student-sheet .student-sentence-row .inline-grammar-mark,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .image-blank-token,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .inline-vocab-mark,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .inline-grammar-mark {
+    font-size: inherit;
+    line-height: 1.12;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token.vocab-overlap,
+  .image-export-page .student-sheet .student-sentence-row .inline-vocab-mark,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .image-blank-token.vocab-overlap,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .inline-vocab-mark {
+    padding: 0 .12em;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token.grammar-overlap,
+  .image-export-page .student-sheet .student-sentence-row .inline-grammar-mark,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .image-blank-token.grammar-overlap,
+  body.printing-mode #print-area .student-sheet .student-sentence-row .inline-grammar-mark {
+    padding: .005em .12em;
+  }
+
+  .image-export-page .student-sheet,
+  .image-export-page .student-sheet * {
+    font-family: "Plus Jakarta Sans", "Noto Sans KR", "Segoe UI", sans-serif !important;
+  }
+
+  .image-export-page .student-summary-row {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 10px;
+    padding: 9px 14px;
+  }
+
+  .image-export-page .student-summary-copy {
+    font-size: 13px;
+    line-height: 1.52;
+  }
+
+  .image-export-page .student-summary-order-line {
+    font-size: 13px;
+    line-height: 1.46;
+  }
+
+  .image-export-page .student-sheet .summary-english {
+    font-size: 13px;
+    line-height: 1.58;
+  }
+
+  .image-export-page .student-summary-order-lines {
+    gap: 3px;
+  }
+
+  .image-export-page .student-sheet .summary-underline {
+    font-weight: inherit;
+  }
+
+  .image-export-page .student-sheet .student-sentence-box {
+    padding: 2px 18px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 10px;
+    padding: 2px 0;
+  }
+
+  .image-export-page .student-sheet .student-sentence-meta {
+    grid-template-columns: 24px minmax(0, 1fr);
+    column-gap: 5px;
+    width: 78px;
+  }
+
+  .image-export-page .student-sentence-number {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 2px;
+    border-radius: 7px;
+    font-size: 11px;
+  }
+
+  .image-export-page .student-sheet .sentence-marker-group.student-markers {
+    gap: 3px;
+  }
+
+  .image-export-page .student-sheet .sentence-marker {
+    min-width: 14px;
+    min-height: 16px;
+    padding: 1px 4px;
+    font-size: 8.5px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .sentence-text {
+    font-size: 14px;
+    line-height: 2.32;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .inline-blank-box,
+  .image-export-page .student-sheet .student-sentence-row .inline-blank-line {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1.43;
+    padding: .073em .254em;
+    border-width: 1.9px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token.figurative-overlap::after {
+    bottom: -1.5pt;
+    border-bottom-width: 2.5px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token,
+  .image-export-page .student-sheet .student-sentence-row .inline-vocab-mark,
+  .image-export-page .student-sheet .student-sentence-row .inline-grammar-mark {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1.12;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .inline-figurative-mark {
+    font-weight: inherit;
+    text-decoration-thickness: 2.5px;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token.vocab-overlap,
+  .image-export-page .student-sheet .student-sentence-row .inline-vocab-mark {
+    padding: 0 .14em;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .image-blank-token.grammar-overlap,
+  .image-export-page .student-sheet .student-sentence-row .inline-grammar-mark {
+    padding: .005em .14em;
+  }
+
+  .image-export-page .student-sheet .student-sentence-row .inline-vocab-mark.figurative-overlap,
+  .image-export-page .student-sheet .student-sentence-row .inline-grammar-mark.figurative-overlap {
+    padding-left: 0;
+    padding-right: 0;
+    text-decoration-thickness: 2.5px;
+  }
+
 </style>
 </head>
 <body>
@@ -1610,12 +2090,19 @@
 <div id="layout">
   <div id="left">
     <div class="left-card">
+      <label class="input-label">분석 JSON 업로드 <span>00~05 전체 데이터, 포인트는 05만 사용</span></label>
+      <input type="file" id="json-file" accept=".json,application/json" multiple>
+      <div id="json-status" class="status"></div>
+      <div class="hint">`MASTER_ANALYSIS.json` 파일을 올리면 03의 끊어읽기 문장에서 `/`를 제거해 원문으로 쓰고, 출제 포인트는 05만 사용합니다.</div>
+    </div>
+
+    <div class="left-card legacy-inputs">
       <label class="input-label">원문 입력 <span>한 줄 = 한 문장, 빈 줄 = 다음 지문</span></label>
       <textarea id="passage-input" rows="12" placeholder="첫번째 지문 1문장&#10;첫번째 지문 2문장&#10;&#10;두번째 지문 1문장&#10;두번째 지문 2문장"></textarea>
       <div class="hint">문장 번호는 문장부호 패턴이 아니라 줄바꿈 기준으로 매깁니다.</div>
     </div>
 
-    <div class="left-card">
+    <div class="left-card legacy-inputs">
       <label class="input-label">출제 완전 분석 MD <span>붙여넣기 또는 여러 파일 업로드</span></label>
       <input type="file" id="analysis-file" accept=".md,.markdown,text/markdown,text/plain" multiple>
       <div id="file-status" class="status"></div>
@@ -1623,7 +2110,7 @@
       <div class="hint">여러 템플릿 MD 파일을 올리거나, 하나의 MD 안에 `항목 | 내용` 분석표가 여러 개 있어도 자동으로 지문별 탭을 만듭니다.</div>
     </div>
 
-    <div class="convert-panel">
+    <div class="convert-panel legacy-inputs">
       <div class="convert-grid">
         <div>
           <label class="input-label">05 출제포인트 원본 변환 <span>전체 텍스트를 붙여 넣어도 05 표만 읽습니다</span></label>
@@ -1650,7 +2137,7 @@
     <div id="error-box"></div>
 
     <div class="left-action-stack">
-      <button id="gen-btn" onclick="generate()">통합 자료 생성</button>
+      <button id="gen-btn" onclick="generate()">JSON 자료 불러오기</button>
       <button id="print-btn" onclick="openPrintOptions()" disabled>프린트</button>
       <button id="image-btn" onclick="openImageOptions()" disabled>이미지 저장</button>
     </div>
@@ -1669,7 +2156,7 @@
 
     <div id="loading">
       <span class="spin">⟳</span>
-      입력한 원문과 분석표를 지문별로 정리하는 중입니다.
+      업로드한 분석 JSON으로 지문을 정리하는 중입니다.
     </div>
 
     <div id="result-area">
@@ -1784,6 +2271,8 @@
 <script src="./vendor/html2canvas.min.js"></script>
 <!-- HTML2CANVAS_LIB -->
 <script>
+var DEFAULT_GENERATE_BUTTON_LABEL = "JSON 자료 불러오기";
+var uploadedJsonFiles = [];
 var uploadedAnalysisFiles = [];
 var records = [];
 var activeRecordIndex = 0;
@@ -1815,6 +2304,13 @@ document.getElementById("analysis-file").addEventListener("change", function (ev
   uploadedAnalysisFiles = Array.prototype.slice.call(event.target.files || []);
   document.getElementById("file-status").textContent = uploadedAnalysisFiles.length
     ? uploadedAnalysisFiles.length + "개 파일 선택됨"
+    : "";
+});
+
+document.getElementById("json-file").addEventListener("change", function (event) {
+  uploadedJsonFiles = Array.prototype.slice.call(event.target.files || []);
+  document.getElementById("json-status").textContent = uploadedJsonFiles.length
+    ? uploadedJsonFiles.length + "개 JSON 선택됨"
     : "";
 });
 
@@ -2010,7 +2506,7 @@ function rangesOverlap(start, end, ranges) {
 }
 
 function figurativeMarkHtml(sourceText) {
-  var compact = String(sourceText || "").replace(/\s+/g, " ").trim();
+  var compact = String(sourceText || "").replace(/\s+/g, " ");
   return '<span class="inline-figurative-mark">' + escapeHtml(compact) + '</span>';
 }
 
@@ -2039,16 +2535,7 @@ function buildInlineMarkRanges(text, vocabTargets, grammarTargets, figurativeTar
   });
 
   (figurativeTargets || []).slice().sort(function (a, b) { return String(b).length - String(a).length; }).forEach(function (target) {
-    var overlapped = findOverlappingRange(source, target, ranges);
-    if (overlapped) {
-      overlapped.figurativeOverlap = true;
-      return;
-    }
-    var found = findHighlightRange(source, target, ranges);
-    if (found) {
-      found.kind = "figurative";
-      ranges.push(found);
-    }
+    applyFigurativeTargetRange(source, target, ranges);
   });
 
   ranges.sort(function (a, b) { return a.start - b.start; });
@@ -2169,6 +2656,94 @@ function findHighlightRange(text, target, ranges) {
   }
 
   return found;
+}
+
+function findHighlightRangeAny(text, target) {
+  var variants = [String(target || "").trim()];
+  var normalized = cleanMdInline(target);
+  var quoteTrimmed = normalized.replace(/^["'“”‘’]+|["'“”‘’]+$/g, "").trim();
+  var i;
+
+  if (normalized && variants.indexOf(normalized) === -1) variants.push(normalized);
+  if (quoteTrimmed && variants.indexOf(quoteTrimmed) === -1) variants.push(quoteTrimmed);
+
+  for (i = 0; i < variants.length; i += 1) {
+    var candidate = variants[i];
+    var regex;
+    var match;
+    if (!candidate) continue;
+    regex = buildLooseQuoteRegex(candidate);
+    match = regex.exec(text);
+    if (match) {
+      return { start: match.index, end: match.index + match[0].length, source: match[0] };
+    }
+  }
+
+  return null;
+}
+
+function addUniqueOverlapTarget(range, fieldName, target) {
+  if (!target || !String(target).trim()) return;
+  range[fieldName] = range[fieldName] || [];
+  if (range[fieldName].indexOf(target) === -1) range[fieldName].push(target);
+}
+
+function applyFigurativeTargetRange(text, target, ranges) {
+  var found = findHighlightRangeAny(text, target);
+  var blockers;
+  var cursor;
+  if (!found) return false;
+
+  blockers = ranges.filter(function (range) {
+    return range.kind !== "figurative" && found.start < range.end && found.end > range.start;
+  }).sort(function (a, b) {
+    return a.start - b.start;
+  });
+
+  if (!blockers.length) {
+    ranges.push({
+      kind: "figurative",
+      start: found.start,
+      end: found.end,
+      source: found.source
+    });
+    return true;
+  }
+
+  cursor = found.start;
+  blockers.forEach(function (range) {
+    var overlapStart = Math.max(found.start, range.start);
+    var overlapEnd = Math.min(found.end, range.end);
+    var overlapText = text.slice(overlapStart, overlapEnd);
+
+    if (cursor < range.start) {
+      ranges.push({
+        kind: "figurative",
+        start: cursor,
+        end: range.start,
+        source: text.slice(cursor, range.start)
+      });
+    }
+
+    if (range.kind === "blank") {
+      addUniqueOverlapTarget(range, "overlapFigurativeTargets", overlapText);
+    } else if (range.kind === "vocab" || range.kind === "grammar") {
+      range.figurativeOverlap = true;
+    }
+
+    cursor = Math.max(cursor, range.end);
+  });
+
+  if (cursor < found.end) {
+    ranges.push({
+      kind: "figurative",
+      start: cursor,
+      end: found.end,
+      source: text.slice(cursor, found.end)
+    });
+  }
+
+  return true;
 }
 
 function findOverlappingRange(text, target, ranges) {
@@ -2340,30 +2915,7 @@ function renderSentenceTextWithBlank(sentence, renderMode) {
   });
 
   figurativeTargets.forEach(function (target) {
-    var overlappedBlank = findOverlappingRange(text, target, ranges.filter(function (range) {
-      return range.kind === "blank";
-    }));
-    if (overlappedBlank) {
-      overlappedBlank.overlapFigurativeTargets = overlappedBlank.overlapFigurativeTargets || [];
-      if (overlappedBlank.overlapFigurativeTargets.indexOf(target) === -1) {
-        overlappedBlank.overlapFigurativeTargets.push(target);
-      }
-      return;
-    }
-
-    var overlappedVocab = findOverlappingRange(text, target, ranges.filter(function (range) {
-      return range.kind === "vocab" || range.kind === "grammar";
-    }));
-    if (overlappedVocab) {
-      overlappedVocab.figurativeOverlap = true;
-      return;
-    }
-
-    var found = findHighlightRange(text, target, ranges);
-    if (found) {
-      found.kind = "figurative";
-      ranges.push(found);
-    }
+    applyFigurativeTargetRange(text, target, ranges);
   });
 
   if (!ranges.length) return escapeHtml(text);
@@ -3257,6 +3809,285 @@ function sortPoints(points) {
   });
 }
 
+function jsonString(value, fallback) {
+  var cleaned = cleanMdInline(value);
+  return cleaned || (fallback || "");
+}
+
+function jsonPassageSentenceText(value) {
+  return jsonString(value)
+    .replace(/\s+\/\s+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function jsonStarsToCount(value) {
+  return Math.max(1, countStars(cleanMdInline(value || "★")));
+}
+
+function jsonSentenceNumber(value) {
+  return extractSentenceNumber(cleanMdInline(value));
+}
+
+function formatJsonAnswerOptions(value) {
+  var parts = [];
+  var a = "";
+  var b = "";
+  if (value && typeof value === "object") {
+    a = Array.isArray(value.A) ? value.A.map(cleanMdInline).filter(Boolean).join(", ") : cleanMdInline(value.A);
+    b = Array.isArray(value.B) ? value.B.map(cleanMdInline).filter(Boolean).join(", ") : cleanMdInline(value.B);
+  }
+  if (a) parts.push("(A) " + a);
+  if (b) parts.push("(B) " + b);
+  return parts.join(" / ");
+}
+
+function buildJsonOrderDescriptor(item) {
+  var ref = item && item["문장번호"] ? cleanMdInline(item["문장번호"]) : "";
+  var role = item && item["기능"] ? cleanMdInline(item["기능"]) : "";
+  return [ref, role].filter(Boolean).join(" ");
+}
+
+function buildJsonSentenceTextLookup(passage, pointSections) {
+  var lookup = {};
+  var rawSentences = passage && Array.isArray(passage["지문"]) ? passage["지문"] : [];
+  var descriptive = pointSections && Array.isArray(pointSections["서술형 포인트"]) ? pointSections["서술형 포인트"] : [];
+  var inserts = pointSections && Array.isArray(pointSections["문장 삽입 포인트"]) ? pointSections["문장 삽입 포인트"] : [];
+
+  rawSentences.forEach(function (sentence, index) {
+    var sentenceNum = jsonSentenceNumber(sentence && sentence["번호"]) || (index + 1);
+    var english = jsonPassageSentenceText(sentence && sentence["영어"]);
+    if (sentenceNum && english) lookup[sentenceNum] = english;
+  });
+
+  descriptive.forEach(function (item) {
+    var sentenceNum = jsonSentenceNumber(item && item["문장번호"]);
+    var english = jsonString(item && item["영어원문"]);
+    if (sentenceNum && english && !lookup[sentenceNum]) lookup[sentenceNum] = english;
+  });
+
+  inserts.forEach(function (item) {
+    var sentenceNum = jsonSentenceNumber(item && item["문장번호"]);
+    var candidate = jsonString(item && item["삽입후보문장"]);
+    if (sentenceNum && candidate && !lookup[sentenceNum]) lookup[sentenceNum] = candidate;
+  });
+
+  return lookup;
+}
+
+function deriveJsonFallbackSentenceText(sentence) {
+  var preferred = "";
+  var longest = "";
+  if (!sentence || !sentence.points || !sentence.points.length) return "원문 미입력";
+
+  sentence.points.forEach(function (point) {
+    var title = jsonString(point && point.title);
+    if (!title) return;
+    if (!preferred && point.type === "서술형") preferred = title;
+    if (!preferred && point.type === "문장 삽입") preferred = title;
+    if (!longest || title.length > longest.length) longest = title;
+  });
+
+  return preferred || longest || "원문 미입력";
+}
+
+function buildRecordFromJsonPassage(passage, index, sourceName) {
+  var pointSections = passage && passage["출제포인트"];
+  var summarySource;
+  var sentenceLookup;
+  var maxRef = 0;
+  var pointSeed = 1;
+  var sentenceCountFromLookup = 0;
+  var count;
+  var summary;
+  var sentences = [];
+  var numberLabel;
+  var i;
+
+  if (!pointSections || typeof pointSections !== "object") {
+    throw new Error("JSON 안에서 출제포인트 데이터를 찾지 못했습니다.");
+  }
+
+  summarySource = pointSections["핵심 내용 재활용"] || {};
+  sentenceLookup = buildJsonSentenceTextLookup(passage, pointSections);
+
+  Object.keys(sentenceLookup).forEach(function (key) {
+    sentenceCountFromLookup = Math.max(sentenceCountFromLookup, Number(key) || 0);
+  });
+
+  ["어휘 포인트", "빈칸 포인트", "문장 삽입 포인트", "서술형 포인트", "함축 의미 포인트"].forEach(function (sectionName) {
+    var items = Array.isArray(pointSections[sectionName]) ? pointSections[sectionName] : [];
+    items.forEach(function (item) {
+      maxRef = Math.max(maxRef, jsonSentenceNumber(item && item["문장번호"]) || 0);
+    });
+  });
+
+  ["BOX", "A", "B", "C"].forEach(function (key) {
+    var item = pointSections["글의 순서 포인트"] && pointSections["글의 순서 포인트"][key];
+    var range = extractSentenceRange(buildJsonOrderDescriptor(item));
+    if (range) maxRef = Math.max(maxRef, range.end);
+  });
+
+  count = Math.max(sentenceCountFromLookup, maxRef, 1);
+  for (i = 0; i < count; i += 1) {
+    sentences.push({
+      num: i + 1,
+      text: sentenceLookup[i + 1] || "원문 미입력",
+      orderLabels: [],
+      points: []
+    });
+  }
+
+  function attach(sentenceNum, point) {
+    var targetNum = sentenceNum > 0 ? sentenceNum : 1;
+    while (sentences.length < targetNum) {
+      sentences.push({ num: sentences.length + 1, text: "원문 미입력", orderLabels: [], points: [] });
+    }
+    if (!point.id) point.id = "json-pt-" + (index + 1) + "-" + (pointSeed++);
+    point.sentenceNum = targetNum;
+    sentences[targetNum - 1].points.push(point);
+  }
+
+  function markOrderLabel(label, descriptor) {
+    var range = extractSentenceRange(descriptor);
+    if (!range) return;
+    while (sentences.length < range.start) {
+      sentences.push({ num: sentences.length + 1, text: "원문 미입력", orderLabels: [], points: [] });
+    }
+    if (sentences[range.start - 1].orderLabels.indexOf(label) === -1) {
+      sentences[range.start - 1].orderLabels.push(label);
+    }
+  }
+
+  summary = {
+    topic: jsonString(summarySource["주제"], jsonString(passage["주제"], "주제 정보 없음")),
+    title: jsonString(summarySource["제목"], jsonString(passage["제목"], "제목 정보 없음")),
+    oneSentence: jsonString(summarySource["한_문장_요약"], jsonString(passage["한_문장_요약"], "한 문장 요약 없음")),
+    english: jsonString(summarySource["영어_요약문"]),
+    blankA: jsonString(summarySource["A"]),
+    blankB: jsonString(summarySource["B"]),
+    answerOptions: formatJsonAnswerOptions(summarySource["정답_가능_표현"]),
+    strategy: jsonString(summarySource["풀이_전략"]),
+    manualUnderline: {
+      a: jsonString(summarySource["A"]),
+      b: jsonString(summarySource["B"])
+    }
+  };
+
+  (Array.isArray(pointSections["빈칸 포인트"]) ? pointSections["빈칸 포인트"] : []).forEach(function (item) {
+    attach(jsonSentenceNumber(item && item["문장번호"]), {
+      type: "빈칸",
+      stars: jsonStarsToCount(item && item["별점"]),
+      title: jsonString(item && item["핵심구절"]),
+      lines: [jsonString(item && item["출제이유"]) ? "출제 이유: " + jsonString(item && item["출제이유"]) : ""]
+    });
+  });
+
+  (Array.isArray(pointSections["어휘 포인트"]) ? pointSections["어휘 포인트"] : []).forEach(function (item) {
+    attach(jsonSentenceNumber(item && item["문장번호"]), {
+      type: "어휘",
+      stars: jsonStarsToCount(item && item["별점"]),
+      title: jsonString(item && item["표현"]),
+      lines: [jsonString(item && item["왜_벗어나는가"]) ? "왜 벗어나는가: " + jsonString(item && item["왜_벗어나는가"]) : ""]
+    });
+  });
+
+  (Array.isArray(pointSections["문장 삽입 포인트"]) ? pointSections["문장 삽입 포인트"] : []).forEach(function (item) {
+    attach(jsonSentenceNumber(item && item["문장번호"]), {
+      type: "문장 삽입",
+      stars: jsonStarsToCount(item && item["별점"]),
+      title: jsonString(item && item["삽입후보문장"]),
+      lines: [jsonString(item && item["출제이유"]) ? "출제 이유: " + jsonString(item && item["출제이유"]) : ""]
+    });
+  });
+
+  (Array.isArray(pointSections["서술형 포인트"]) ? pointSections["서술형 포인트"] : []).forEach(function (item) {
+    attach(jsonSentenceNumber(item && item["문장번호"]), {
+      type: "서술형",
+      stars: jsonStarsToCount(item && item["별점"]),
+      title: jsonString(item && item["영어원문"]),
+      lines: [jsonString(item && item["문법포인트설명"]) ? "문법 포인트 설명: " + jsonString(item && item["문법포인트설명"]) : ""]
+    });
+  });
+
+  (Array.isArray(pointSections["함축 의미 포인트"]) ? pointSections["함축 의미 포인트"] : []).forEach(function (item) {
+    attach(jsonSentenceNumber(item && item["문장번호"]), {
+      type: "함축 의미",
+      stars: jsonStarsToCount(item && item["별점"]),
+      title: jsonString(item && item["핵심표현"]),
+      lines: [
+        jsonString(item && item["함축의미"]) ? "함축 의미: " + jsonString(item && item["함축의미"]) : "",
+        jsonString(item && item["왜_중요한가"]) ? "왜 중요한가: " + jsonString(item && item["왜_중요한가"]) : ""
+      ]
+    });
+  });
+
+  if (pointSections["글의 순서 포인트"] && typeof pointSections["글의 순서 포인트"] === "object") {
+    var orderPoint = pointSections["글의 순서 포인트"];
+    var orderBox = buildJsonOrderDescriptor(orderPoint["BOX"]);
+    var orderA = buildJsonOrderDescriptor(orderPoint["A"]);
+    var orderB = buildJsonOrderDescriptor(orderPoint["B"]);
+    var orderC = buildJsonOrderDescriptor(orderPoint["C"]);
+    var orderAnswer = jsonString(orderPoint["정답"]);
+
+    markOrderLabel("(A)", orderA);
+    markOrderLabel("(B)", orderB);
+    markOrderLabel("(C)", orderC);
+
+    if (orderBox || orderA || orderB || orderC || orderAnswer) {
+      summary.orderPoint = {
+        title: orderBox || "글의 순서 기준 문장",
+        lines: [
+          orderA ? "A: " + orderA : "",
+          orderB ? "B: " + orderB : "",
+          orderC ? "C: " + orderC : ""
+        ]
+      };
+    }
+  }
+
+  sentences.forEach(function (sentence) {
+    sentence.points = sortPoints(sentence.points);
+    if (!sentenceLookup[sentence.num]) {
+      sentence.text = deriveJsonFallbackSentenceText(sentence);
+    }
+  });
+
+  numberLabel = jsonString(passage["번호"], String(index + 1));
+  return {
+    defaultLabel: "지문 " + numberLabel,
+    sourceTitle: cleanMdInline(sourceName || ""),
+    label: "지문 " + numberLabel,
+    summary: summary,
+    sentences: sentences,
+    missingPassage: !sentenceCountFromLookup
+  };
+}
+
+async function getJsonRecords() {
+  var entries = [];
+  var i;
+
+  for (i = 0; i < uploadedJsonFiles.length; i += 1) {
+    var file = uploadedJsonFiles[i];
+    var rawText = await file.text();
+    var payload = JSON.parse(String(rawText || "").replace(/^\uFEFF/, ""));
+    if (!payload || !Array.isArray(payload.PASSAGES)) {
+      throw new Error(file.name + " 파일에서 PASSAGES 배열을 찾지 못했습니다.");
+    }
+    payload.PASSAGES.forEach(function (passage) {
+      entries.push({
+        passage: passage,
+        sourceName: file.name.replace(/\.[^.]+$/, "")
+      });
+    });
+  }
+
+  return entries.map(function (entry, index) {
+    return buildRecordFromJsonPassage(entry.passage, index, entry.sourceName);
+  });
+}
+
 function getDefaultRecordLabel(index) {
   return "지문 " + (index + 1);
 }
@@ -3440,6 +4271,22 @@ function renderSummaryOrderItem(summary) {
       }).join("") +
     '</span>' +
   '</div>';
+}
+
+function renderStudentSummaryOrderHtml(summary) {
+  var orderPoint = summary && summary.orderPoint;
+  var lines = [];
+  if (!orderPoint) return "";
+  if (orderPoint.title) lines.push("BOX: " + orderPoint.title);
+  (orderPoint.lines || []).filter(Boolean).forEach(function (line) {
+    lines.push(line);
+  });
+  if (!lines.length) return "";
+  return '<div class="student-summary-row"><div class="student-summary-label">글의 순서</div><div class="student-summary-copy student-summary-order-lines">' +
+      lines.map(function (line) {
+        return '<div class="student-summary-order-line">' + escapeHtml(line) + '</div>';
+      }).join("") +
+  '</div></div>';
 }
 
 function closeSummaryEditor() {
@@ -3643,7 +4490,6 @@ function buildRecord(passageLines, analysisBlock, index) {
         order.partA ? "A: " + order.partA : "",
         order.partB ? "B: " + order.partB : "",
         order.partC ? "C: " + order.partC : "",
-        order.answer ? "정답: " + order.answer : "",
         order.trap ? "오답 유인: " + order.trap : ""
       ]
     };
@@ -3765,9 +4611,12 @@ function renderSentenceCards(sentences, options) {
 
 function renderStudentSentenceBlock(sentences, renderMode) {
   return '<div class="student-sentence-box">' + sentences.map(function (sentence) {
-    var sentenceMarkerHtml = buildSentenceMarkerHtml(sentence);
+    var sentenceMarkerHtml = buildSentenceMarkerHtml(sentence, "student-markers");
     var sentenceTextHtml = renderSentenceTextWithBlank(sentence, renderMode);
-    var sentenceMetaHtml = '<div class="sentence-meta">' + (sentenceMarkerHtml || '') + '</div>';
+    var sentenceMetaHtml = '<div class="sentence-meta student-sentence-meta">' +
+      '<div class="student-sentence-number">' + sentence.num + '</div>' +
+      (sentenceMarkerHtml || '') +
+    '</div>';
     return '<div class="student-sentence-row">' +
       sentenceMetaHtml +
       '<div class="sentence-text"><span class="sentence-flow">' + sentenceTextHtml + '</span></div>' +
@@ -3778,8 +4627,7 @@ function renderStudentSentenceBlock(sentences, renderMode) {
 function renderTeacherSummaryHtml(summary) {
   var answerOptions = splitAnswerOptions(summary.answerOptions, summary);
   var orderHtml = renderSummaryOrderItem(summary);
-  return '<div class="section"><div class="section-title">요지 / 주제 / 제목 / 한 문장 요약</div><div class="summary-box">' +
-    '<div class="summary-item"><span class="summary-label">요지</span>' + escapeHtml(summary.mainPoint) + '</div>' +
+  return '<div class="section"><div class="section-title">주제 / 제목 / 한 문장 요약</div><div class="summary-box">' +
     '<div class="summary-item"><span class="summary-label">주제</span>' + escapeHtml(summary.topic) + '</div>' +
     '<div class="summary-item"><span class="summary-label">제목</span>' + escapeHtml(summary.title) + '</div>' +
     '<hr class="summary-divider">' +
@@ -3793,15 +4641,15 @@ function renderTeacherSummaryHtml(summary) {
 }
 
 function renderStudentSummaryHtml(summary) {
-  var orderHtml = renderSummaryOrderItem(summary);
-  return '<div class="section"><div class="section-title">요지 / 주제 / 제목 / 한 문장 요약</div><div class="summary-box">' +
-    '<div class="summary-item"><span class="summary-label">요지</span>' + escapeHtml(summary.mainPoint) + '</div>' +
-    '<div class="summary-item"><span class="summary-label">주제</span>' + escapeHtml(summary.topic) + '</div>' +
-    '<div class="summary-item"><span class="summary-label">제목</span>' + escapeHtml(summary.title) + '</div>' +
-    '<hr class="summary-divider">' +
-    '<div class="summary-item"><span class="summary-label">한 문장 요약</span>' + escapeHtml(summary.oneSentence) + '</div>' +
-    '<div class="summary-item summary-inline"><span class="summary-label">영어 요약문</span><span class="summary-english">' + renderSummaryEnglish(summary) + '</span></div>' +
-    (orderHtml ? '<hr class="summary-divider">' + orderHtml : '') +
+  var orderHtml = renderStudentSummaryOrderHtml(summary);
+  return '<div class="section"><div class="section-title">주제 / 제목 / 한 문장 요약</div><div class="summary-box">' +
+    '<div class="student-summary-grid">' +
+      '<div class="student-summary-row"><div class="student-summary-label">주제</div><div class="student-summary-copy">' + escapeHtml(summary.topic) + '</div></div>' +
+      '<div class="student-summary-row"><div class="student-summary-label">제목</div><div class="student-summary-copy">' + escapeHtml(summary.title) + '</div></div>' +
+      '<div class="student-summary-row"><div class="student-summary-label">한 문장 요약</div><div class="student-summary-copy">' + escapeHtml(summary.oneSentence) + '</div></div>' +
+      '<div class="student-summary-row"><div class="student-summary-label">영어 요약문</div><div class="student-summary-copy summary-english">' + renderSummaryEnglish(summary) + '</div></div>' +
+      (orderHtml || '') +
+    '</div>' +
   '</div></div>';
 }
 
@@ -3818,7 +4666,7 @@ function buildRecordSheetBody(record, viewMode, renderMode) {
 }
 
 function buildRecordSheetHtml(record, viewMode, renderMode) {
-  return '<div class="sheet">' +
+  return '<div class="sheet' + (viewMode === "student" ? ' student-sheet' : '') + '">' +
     '<div class="sheet-head"><div class="sheet-title">' + escapeHtml(record.label || record.defaultLabel || "지문") + '</div></div>' +
     buildRecordSheetBody(record, viewMode, renderMode) +
   '</div>';
@@ -4023,11 +4871,12 @@ async function renderImagePageToBlob(pageRecords) {
   await waitForPaint();
   var visualWidth = Math.ceil(page.scrollWidth);
   var visualHeight = Math.ceil(page.scrollHeight);
+  var imageScale = activeViewMode === "student" ? 1 : EXPORT_IMAGE_SCALE;
 
   try {
     var canvas = await html2canvas(page, {
       backgroundColor: "#ffffff",
-      scale: EXPORT_IMAGE_SCALE,
+      scale: imageScale,
       useCORS: true,
       allowTaint: false,
       logging: false,
@@ -4136,16 +4985,13 @@ async function generate() {
   document.getElementById("result-area").style.display = "none";
   document.getElementById("gen-btn").disabled = true;
   document.getElementById("image-btn").disabled = true;
-  document.getElementById("gen-btn").textContent = "정리 중...";
+  document.getElementById("gen-btn").textContent = "JSON 불러오는 중...";
 
   try {
-    var passages = splitPassageBlocks(document.getElementById("passage-input").value);
-    var analysisBlocks = await getAnalysisBlocks();
-    if (!analysisBlocks.length) throw new Error("출제 완전 분석 MD를 먼저 넣어주세요");
+    if (!uploadedJsonFiles.length) throw new Error("분석 JSON 파일을 먼저 올려주세요.");
+    records = await getJsonRecords();
+    if (!records.length) throw new Error("JSON 안에 PASSAGES 데이터가 없습니다.");
 
-    records = analysisBlocks.map(function (block, index) {
-      return buildRecord(passages[index] || [], block, index);
-    });
     activeRecordIndex = 0;
     activeViewMode = "teacher";
 
@@ -4159,11 +5005,9 @@ async function generate() {
     document.getElementById("image-btn").disabled = false;
     successBox.style.display = "block";
 
-    var detail = "지문 " + records.length + "개를 생성했습니다.";
-    if (passages.length > analysisBlocks.length) {
-      detail += " 원문은 " + passages.length + "개가 들어왔고, 앞의 " + analysisBlocks.length + "개만 사용했습니다.";
-    } else if (analysisBlocks.length > passages.length) {
-      detail += " 원문이 없는 지문은 번호와 분석만 기준으로 제시합니다.";
+    var detail = "JSON 지문 " + records.length + "개를 생성했습니다.";
+    if (records.some(function (record) { return record.missingPassage; })) {
+      detail += " 원문 문장이 없는 JSON은 핵심 표현이나 원문 예시를 대신 표시합니다.";
     }
     document.getElementById("success-detail").textContent = detail;
   } catch (error) {
@@ -4175,7 +5019,7 @@ async function generate() {
     errorBox.style.display = "block";
   } finally {
     document.getElementById("gen-btn").disabled = false;
-    document.getElementById("gen-btn").textContent = "통합 자료 생성";
+    document.getElementById("gen-btn").textContent = DEFAULT_GENERATE_BUTTON_LABEL;
   }
 }
 
