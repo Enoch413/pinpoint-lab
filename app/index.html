@@ -112,7 +112,7 @@
   .sentence-marker.marker-insert { background: linear-gradient(180deg, #ecf5f2, #dceae5); color: #2f5f58; border: 1px solid #bdd5cd; }
   .sentence-number { color: #f8f3e8; letter-spacing: .01em; }
   .sentence-text { font-size: 13px; line-height: 1.8; flex: 1; min-width: 0; text-align: left; }
-  .sentence-flow { display: block; direction: ltr; unicode-bidi: bidi-override; text-align: left; }
+  .sentence-flow { display: block; direction: ltr; unicode-bidi: bidi-override; text-align: left; text-wrap: pretty; }
   .sentence-edit-btn { flex: 0 0 auto; padding: 5px 9px; border: 1px solid #d7c8b3; border-radius: 999px; background: #fff9ef; color: #7b6249; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
   .sentence-edit-btn:hover { background: #f8efdf; border-color: #c7b08e; }
   .student-sentence-box { background: #fcfaf6; border: 1px solid #e0d8cc; border-radius: 12px; padding: 10px 12px; }
@@ -124,6 +124,11 @@
   .student-sentence-row .sentence-text { font-size: 12px; line-height: 1.65; }
   .inline-blank-box { display: inline; padding: .04em .34em; border: 1.7px solid #1a1a2e; border-radius: 4px; background: linear-gradient(180deg, #fffdf7, #f7f0e4); margin: 0; box-sizing: border-box; font-weight: 700; color: #1a1a2e; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
   .inline-blank-image { display: inline; }
+  .screen-blank-image .inline-blank-unit { display: inline-block; vertical-align: baseline; background: linear-gradient(180deg, #fffdf7, #f7f0e4); box-sizing: border-box; border-top: 1.7px solid #1a1a2e; border-bottom: 1.7px solid #1a1a2e; padding: 0; margin: 0; line-height: 1.43; }
+  .screen-blank-image .inline-blank-unit.blank-line-start { border-left: 1.7px solid #1a1a2e; border-top-left-radius: 4px; border-bottom-left-radius: 4px; padding-left: .34em; }
+  .screen-blank-image .inline-blank-unit.blank-line-end { border-right: 1.7px solid #1a1a2e; border-top-right-radius: 4px; border-bottom-right-radius: 4px; padding-right: .34em; }
+  .screen-blank-image .inline-blank-unit.blank-line-start.blank-continues-prev { border-left-color: transparent; border-top-left-radius: 0; border-bottom-left-radius: 0; padding-left: 0; }
+  .screen-blank-image .inline-blank-unit.blank-line-end.blank-continues-next { border-right-color: transparent; border-top-right-radius: 0; border-bottom-right-radius: 0; padding-right: 0; }
   .image-blank-token { display: inline-block; position: relative; white-space: pre; vertical-align: baseline; font-weight: 700; color: #1a1a2e; }
   .image-blank-word,
   .image-blank-space { display: inline-block; }
@@ -1800,6 +1805,29 @@
     border-width: 1.9px;
   }
 
+  .student-sheet .student-sentence-row .screen-blank-image .inline-blank-unit {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1.43;
+    border-top-width: 1.9px;
+    border-bottom-width: 1.9px;
+  }
+
+  .student-sheet .student-sentence-row .screen-blank-image .inline-blank-unit.blank-line-start {
+    border-left-width: 1.9px;
+    padding-left: .254em;
+  }
+
+  .student-sheet .student-sentence-row .screen-blank-image .inline-blank-unit.blank-line-end {
+    border-right-width: 1.9px;
+    padding-right: .254em;
+  }
+
+  .image-export-page .screen-blank-image .inline-blank-unit {
+    font-size: inherit;
+    line-height: 1.43;
+  }
+
   .student-sheet .student-sentence-row .image-blank-token.figurative-overlap::after {
     bottom: -1.5pt;
   }
@@ -2581,40 +2609,75 @@ function blankPieceHtml(text, isSpace, hasVocabOverlap, hasGrammarOverlap, hasFi
   return '<span class="' + classes.join(" ") + '">' + escapeHtml(text) + '</span>';
 }
 
-function segmentedBlankBoxHtml(sourceText, vocabTargets, grammarTargets, figurativeTargets) {
+function buildBlankPieceState(piece, start, vocabRanges, grammarRanges, figurativeRanges) {
+  var end = start + piece.length;
+  var isSpace = !/\S/.test(piece);
+  var hasVocabOverlap = vocabRanges.some(function (range) {
+    return start < range.end && end > range.start;
+  });
+  var hasGrammarOverlap = grammarRanges.some(function (range) {
+    return start < range.end && end > range.start;
+  });
+  var hasFigurativeOverlap = figurativeRanges.some(function (range) {
+    return start < range.end && end > range.start;
+  });
+
+  return {
+    end: end,
+    isSpace: isSpace,
+    html: blankPieceHtml(
+      piece,
+      isSpace,
+      !isSpace && hasVocabOverlap,
+      !isSpace && hasGrammarOverlap,
+      hasFigurativeOverlap
+    )
+  };
+}
+
+function segmentedBlankBoxHtml(sourceText, vocabTargets, grammarTargets, figurativeTargets, renderMode) {
   var source = String(sourceText || "").replace(/\s+/g, " ").trim();
   var vocabRanges = findAllHighlightRanges(source, vocabTargets || []);
   var grammarRanges = findAllHighlightRanges(source, grammarTargets || []);
   var figurativeRanges = findAllHighlightRanges(source, figurativeTargets || []);
   var pieces = source.match(/\S+|\s+/g) || [];
   var cursor = 0;
+
+  if (renderMode === "screen") {
+    var unitHtml = [];
+    var index = 0;
+
+    while (index < pieces.length) {
+      var unitParts = [];
+
+      while (index < pieces.length) {
+        var pieceState = buildBlankPieceState(pieces[index], cursor, vocabRanges, grammarRanges, figurativeRanges);
+        cursor = pieceState.end;
+        unitParts.push(pieceState.html);
+        index += 1;
+        if (pieceState.isSpace) break;
+      }
+
+      if (unitParts.length) {
+        unitHtml.push('<span class="inline-blank-unit">' + unitParts.join("") + '</span>');
+      }
+    }
+
+    return '<span class="inline-blank-image screen-blank-image">' + unitHtml.join("") + '</span>';
+  }
+
   return '<span class="inline-blank-image">' + pieces.map(function (piece) {
-    var start = cursor;
-    var end = start + piece.length;
-    var isSpace = !/\S/.test(piece);
-    var hasVocabOverlap = vocabRanges.some(function (range) {
-      return start < range.end && end > range.start;
-    });
-    var hasGrammarOverlap = grammarRanges.some(function (range) {
-      return start < range.end && end > range.start;
-    });
-    var hasFigurativeOverlap = figurativeRanges.some(function (range) {
-      return start < range.end && end > range.start;
-    });
-    cursor = end;
-    return blankPieceHtml(
-      piece,
-      isSpace,
-      !isSpace && hasVocabOverlap,
-      !isSpace && hasGrammarOverlap,
-      hasFigurativeOverlap
-    );
+    var pieceState = buildBlankPieceState(piece, cursor, vocabRanges, grammarRanges, figurativeRanges);
+    cursor = pieceState.end;
+    return pieceState.html;
   }).join("") + '</span>';
 }
 
 function blankBoxHtml(sourceText, vocabTargets, grammarTargets, figurativeTargets, renderMode) {
   var compact = String(sourceText || "").replace(/\s+/g, " ").trim();
-  if (renderMode === "image" || renderMode === "screen" || !renderMode) return segmentedBlankBoxHtml(compact, vocabTargets || [], grammarTargets || [], figurativeTargets || []);
+  if (renderMode === "screen" || renderMode === "image" || renderMode === "print") {
+    return segmentedBlankBoxHtml(compact, vocabTargets || [], grammarTargets || [], figurativeTargets || [], renderMode);
+  }
   return '<span class="inline-blank-box">' + renderTextWithInlineMarks(compact, vocabTargets || [], grammarTargets || [], figurativeTargets || []) + '</span>';
 }
 
@@ -4674,13 +4737,32 @@ function buildRecordSheetHtml(record, viewMode, renderMode) {
 
 function renderRecord() {
   var record = records[activeRecordIndex];
+  var recordView = document.getElementById("record-view");
   if (!record) return;
   syncRecordLabelInput();
-  document.getElementById("record-view").innerHTML = buildRecordSheetHtml(record, activeViewMode, "screen").replace('<div class="sheet-title">', '<div class="sheet-title" id="sheet-title">');
-  waitForPaint().then(function () {
-    stabilizeImageBlankBoxes(document.getElementById("record-view"));
-  });
+  recordView.innerHTML = buildRecordSheetHtml(record, activeViewMode, "screen").replace('<div class="sheet-title">', '<div class="sheet-title" id="sheet-title">');
+  waitForPaint()
+    .then(function () {
+      decorateScreenBlankBoxes(recordView);
+      return waitForPaint();
+    })
+    .then(function () {
+      decorateScreenBlankBoxes(recordView);
+    });
 }
+
+var screenBlankLayoutTimer = 0;
+window.addEventListener("resize", function () {
+  var recordView = document.getElementById("record-view");
+  clearTimeout(screenBlankLayoutTimer);
+  screenBlankLayoutTimer = setTimeout(function () {
+    if (!recordView || !recordView.children.length) return;
+    decorateScreenBlankBoxes(recordView);
+    waitForPaint().then(function () {
+      decorateScreenBlankBoxes(recordView);
+    });
+  }, 60);
+});
 
 function switchRecord(index) {
   closeSentenceEditor();
@@ -4769,7 +4851,7 @@ function buildImagePageElement(pageRecords, measureOnly) {
   var page = document.createElement("div");
   page.className = "image-export-page" + (measureOnly ? " measure-page" : "");
   page.innerHTML = pageRecords.map(function (record) {
-    return buildRecordSheetHtml(record, activeViewMode, "image");
+    return buildRecordSheetHtml(record, activeViewMode, "screen");
   }).join("");
   return page;
 }
@@ -4792,22 +4874,134 @@ function buildStudentCaptureElement(record, captureWidth) {
   return wrapper;
 }
 
-function stabilizeImageBlankBoxes(root) {
-  root.querySelectorAll(".inline-blank-image").forEach(function (wrapper) {
-    var tokens = Array.prototype.slice.call(wrapper.querySelectorAll(".image-blank-token"));
+function decorateScreenBlankBoxes(root) {
+  root.querySelectorAll(".screen-blank-image").forEach(function (wrapper) {
+    var units = Array.prototype.slice.call(wrapper.querySelectorAll(".inline-blank-unit"));
     var groups = [];
     var currentGroup = null;
 
-    if (!tokens.length) return;
+    if (!units.length) return;
 
-    tokens.forEach(function (token) {
-      var top = Math.round(token.getBoundingClientRect().top);
+    units.forEach(function (unit) {
+      unit.classList.remove("blank-line-start", "blank-line-end", "blank-continues-prev", "blank-continues-next");
+      var top = Math.round(unit.getBoundingClientRect().top);
       if (!currentGroup || Math.abs(currentGroup.top - top) > 1) {
-        currentGroup = { top: top, tokens: [] };
+        currentGroup = { top: top, units: [] };
         groups.push(currentGroup);
       }
-      currentGroup.tokens.push(token.cloneNode(true));
+      currentGroup.units.push(unit);
     });
+
+    groups.forEach(function (group, index) {
+      var firstUnit = group.units[0];
+      var lastUnit = group.units[group.units.length - 1];
+      if (!firstUnit || !lastUnit) return;
+      firstUnit.classList.add("blank-line-start");
+      lastUnit.classList.add("blank-line-end");
+      if (index > 0) firstUnit.classList.add("blank-continues-prev");
+      if (index < groups.length - 1) lastUnit.classList.add("blank-continues-next");
+    });
+  });
+}
+
+function buildBlankTokenUnits(tokens) {
+  var units = [];
+
+  tokens.forEach(function (token) {
+    var rect = token.getBoundingClientRect();
+    var clone = token.cloneNode(true);
+    var width = rect.width;
+    var top = Math.round(rect.top);
+    var lastUnit = units[units.length - 1];
+    var isSpace = token.classList.contains("image-blank-space");
+
+    if (isSpace) {
+      if (!lastUnit) return;
+      lastUnit.tokens.push(clone);
+      lastUnit.width += width;
+      return;
+    }
+
+    units.push({
+      top: top,
+      width: width,
+      tokens: [clone]
+    });
+  });
+
+  return units;
+}
+
+function groupBlankTokenUnitsByLine(units) {
+  var groups = [];
+  var currentGroup = null;
+
+  units.forEach(function (unit) {
+    if (!currentGroup || Math.abs(currentGroup.top - unit.top) > 1) {
+      currentGroup = { top: unit.top, units: [], width: 0 };
+      groups.push(currentGroup);
+    }
+    currentGroup.units.push(unit);
+    currentGroup.width += unit.width;
+  });
+
+  return groups;
+}
+
+function rebalanceBlankTokenLinePair(previousGroup, currentGroup) {
+  var baseDiff;
+  var bestMoveCount = 0;
+  var bestDiff;
+  var movedWidth = 0;
+  var moveCount;
+
+  if (!previousGroup || !currentGroup) return;
+  if (previousGroup.units.length < 3 || !currentGroup.units.length) return;
+  if (currentGroup.width >= previousGroup.width * 0.58) return;
+
+  baseDiff = Math.abs(previousGroup.width - currentGroup.width);
+  bestDiff = baseDiff;
+
+  for (moveCount = 1; moveCount <= previousGroup.units.length - 2; moveCount += 1) {
+    movedWidth += previousGroup.units[previousGroup.units.length - moveCount].width;
+
+    var nextPreviousWidth = previousGroup.width - movedWidth;
+    var nextCurrentWidth = currentGroup.width + movedWidth;
+    var nextDiff = Math.abs(nextPreviousWidth - nextCurrentWidth);
+
+    if (nextPreviousWidth < nextCurrentWidth * 0.72) break;
+    if (nextDiff >= bestDiff) continue;
+
+    bestDiff = nextDiff;
+    bestMoveCount = moveCount;
+  }
+
+  if (!bestMoveCount || bestDiff > baseDiff * 0.9) return;
+
+  currentGroup.units = previousGroup.units.slice(previousGroup.units.length - bestMoveCount).concat(currentGroup.units);
+  previousGroup.units = previousGroup.units.slice(0, previousGroup.units.length - bestMoveCount);
+  previousGroup.width = previousGroup.units.reduce(function (sum, unit) { return sum + unit.width; }, 0);
+  currentGroup.width = currentGroup.units.reduce(function (sum, unit) { return sum + unit.width; }, 0);
+}
+
+function rebalanceBlankTokenGroups(groups) {
+  var index;
+  for (index = groups.length - 1; index > 0; index -= 1) {
+    rebalanceBlankTokenLinePair(groups[index - 1], groups[index]);
+  }
+}
+
+function stabilizeImageBlankBoxes(root) {
+  root.querySelectorAll(".inline-blank-image").forEach(function (wrapper) {
+    var tokens = Array.prototype.slice.call(wrapper.querySelectorAll(".image-blank-token"));
+    var units;
+    var groups;
+
+    if (!tokens.length) return;
+
+    units = buildBlankTokenUnits(tokens);
+    groups = groupBlankTokenUnitsByLine(units);
+    rebalanceBlankTokenGroups(groups);
 
     wrapper.innerHTML = "";
     groups.forEach(function (group, index) {
@@ -4817,8 +5011,10 @@ function stabilizeImageBlankBoxes(root) {
         if (index < groups.length - 1) line.classList.add("continues-next");
         if (index > 0) line.classList.add("continues-prev");
       }
-      group.tokens.forEach(function (token) {
-        line.appendChild(token);
+      group.units.forEach(function (unit) {
+        unit.tokens.forEach(function (token) {
+          line.appendChild(token);
+        });
       });
       wrapper.appendChild(line);
       if (index < groups.length - 1) wrapper.appendChild(document.createElement("br"));
@@ -4837,7 +5033,9 @@ async function measureImagePageHeight(pageRecords) {
     } catch (error) {}
   }
   await waitForPaint();
-  stabilizeImageBlankBoxes(page);
+  decorateScreenBlankBoxes(page);
+  await waitForPaint();
+  decorateScreenBlankBoxes(page);
   await waitForPaint();
   var height = Math.ceil(page.scrollHeight);
   stage.innerHTML = "";
@@ -4887,7 +5085,9 @@ async function renderStudentSheetToBlob(record, captureWidth) {
     } catch (error) {}
   }
   await waitForPaint();
-  stabilizeImageBlankBoxes(sheet);
+  decorateScreenBlankBoxes(sheet);
+  await waitForPaint();
+  decorateScreenBlankBoxes(sheet);
   await waitForPaint();
 
   try {
@@ -4930,7 +5130,9 @@ async function renderImagePageToBlob(pageRecords) {
     } catch (error) {}
   }
   await waitForPaint();
-  stabilizeImageBlankBoxes(page);
+  decorateScreenBlankBoxes(page);
+  await waitForPaint();
+  decorateScreenBlankBoxes(page);
   await waitForPaint();
   var visualWidth = Math.ceil(page.scrollWidth);
   var visualHeight = Math.ceil(page.scrollHeight);
@@ -5020,7 +5222,7 @@ async function startPrint(mode) {
   printArea.className = mode === "all" ? "all-records" : "single-record";
   printArea.innerHTML = targetRecords.map(function (record) {
     return '<div class="print-sheet-wrap">' +
-      buildRecordSheetHtml(record, activeViewMode) +
+      buildRecordSheetHtml(record, activeViewMode, "print") +
     '</div>';
   }).join("");
 
