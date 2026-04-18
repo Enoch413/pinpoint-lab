@@ -3906,9 +3906,13 @@ function formatJsonAnswerOptions(value) {
 }
 
 function buildJsonOrderDescriptor(item) {
-  var ref = item && item["문장번호"] ? cleanMdInline(item["문장번호"]) : "";
+  var ref = buildJsonOrderReference(item);
   var role = item && item["기능"] ? cleanMdInline(item["기능"]) : "";
   return [ref, role].filter(Boolean).join(" ");
+}
+
+function buildJsonOrderReference(item) {
+  return item && item["문장번호"] ? cleanMdInline(item["문장번호"]) : "";
 }
 
 function buildJsonSentenceTextLookup(passage, pointSections) {
@@ -3987,7 +3991,7 @@ function buildRecordFromJsonPassage(passage, index, sourceName) {
 
   ["BOX", "A", "B", "C"].forEach(function (key) {
     var item = pointSections["글의 순서 포인트"] && pointSections["글의 순서 포인트"][key];
-    var range = extractSentenceRange(buildJsonOrderDescriptor(item));
+    var range = extractSentenceRange(buildJsonOrderReference(item));
     if (range) maxRef = Math.max(maxRef, range.end);
   });
 
@@ -4091,11 +4095,14 @@ function buildRecordFromJsonPassage(passage, index, sourceName) {
     var orderA = buildJsonOrderDescriptor(orderPoint["A"]);
     var orderB = buildJsonOrderDescriptor(orderPoint["B"]);
     var orderC = buildJsonOrderDescriptor(orderPoint["C"]);
+    var orderARef = buildJsonOrderReference(orderPoint["A"]);
+    var orderBRef = buildJsonOrderReference(orderPoint["B"]);
+    var orderCRef = buildJsonOrderReference(orderPoint["C"]);
     var orderAnswer = jsonString(orderPoint["정답"]);
 
-    markOrderLabel("(A)", orderA);
-    markOrderLabel("(B)", orderB);
-    markOrderLabel("(C)", orderC);
+    markOrderLabel("(A)", orderARef);
+    markOrderLabel("(B)", orderBRef);
+    markOrderLabel("(C)", orderCRef);
 
     if (orderBox || orderA || orderB || orderC || orderAnswer) {
       summary.orderPoint = {
