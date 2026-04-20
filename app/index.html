@@ -3896,6 +3896,12 @@ function formatJsonAnswerOptions(value) {
   var parts = [];
   var a = "";
   var b = "";
+  if (typeof value === "string") {
+    return cleanMdInline(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map(cleanMdInline).filter(Boolean).join(" / ");
+  }
   if (value && typeof value === "object") {
     a = Array.isArray(value.A) ? value.A.map(cleanMdInline).filter(Boolean).join(", ") : cleanMdInline(value.A);
     b = Array.isArray(value.B) ? value.B.map(cleanMdInline).filter(Boolean).join(", ") : cleanMdInline(value.B);
@@ -4293,6 +4299,9 @@ function splitAnswerOptions(answerOptions, summary) {
   var labeledMatch;
   var parts;
 
+  normalizedRaw = normalizedRaw.replace(/(^|\s)([AB])\s*[:：]/gi, function (match, prefix, label) {
+    return prefix + "(" + label.toUpperCase() + ") ";
+  });
   var labeledRegex = /\((A|B)\)\s*[:：]?\s*([\s\S]*?)(?=\s*\((A|B)\)\s*[:：]?|$)/gi;
   while ((labeledMatch = labeledRegex.exec(normalizedRaw)) !== null) {
     var label = labeledMatch[1].toUpperCase();
@@ -4703,7 +4712,7 @@ function renderTeacherSummaryHtml(summary) {
     '<hr class="summary-divider">' +
     '<div class="summary-item"><span class="summary-label">한 문장 요약</span>' + escapeHtml(summary.oneSentence) + '</div>' +
     '<div class="summary-item summary-inline"><span class="summary-label">영어 요약문</span><span class="summary-english">' + renderSummaryEnglish(summary) + '</span></div>' +
-    (summary.answerOptions ? renderSummaryPairItem("정답 가능 표현", answerOptions.a, answerOptions.b) : '') +
+    ((answerOptions.a || answerOptions.b) ? renderSummaryPairItem("정답 가능 표현", answerOptions.a, answerOptions.b) : '') +
     '<div class="summary-tip">' + escapeHtml(summary.strategy) + '</div>' +
     (orderHtml ? '<hr class="summary-divider">' + orderHtml : '') +
     '<div class="summary-actions"><button class="summary-edit-btn" type="button" onclick="openSummaryEditor()">요약문 밑줄 수정</button></div>' +
