@@ -244,6 +244,11 @@
   @page { size: A4 portrait; margin: 10mm; }
   @media print {
     body { background: #fff; }
+    body.printing-mode #print-area,
+    body.printing-mode #print-area * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     body.printing-mode #layout,
     body.printing-mode #header,
     body.printing-mode #print-modal,
@@ -276,6 +281,96 @@
     body.printing-mode #print-area .print-footer { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px solid #d9d4cb; text-align: center; font-size: 10px; color: #7a746b; }
     body.printing-mode #print-area.all-records .print-sheet-wrap { break-after: page; page-break-after: always; break-inside: avoid; page-break-inside: avoid; min-height: calc(297mm - 20mm); }
     body.printing-mode #print-area.all-records .print-sheet-wrap:last-child { break-after: auto; page-break-after: auto; }
+    body.printing-mode #print-area .inline-vocab-mark,
+    body.printing-mode #print-area .image-blank-token.vocab-overlap {
+      background: #dbeafe !important;
+      color: #1e3a8a !important;
+    }
+    body.printing-mode #print-area .inline-grammar-mark,
+    body.printing-mode #print-area .image-blank-token.grammar-overlap {
+      background: #fef3c7 !important;
+      color: #92400e !important;
+    }
+  }
+  body.print-prep #print-area {
+    position: fixed;
+    left: -200vw;
+    top: 0;
+    display: block !important;
+    width: 190mm;
+    min-height: auto;
+    opacity: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: -1;
+  }
+  body.print-prep #print-area,
+  body.print-prep #print-area .sheet {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+  body.print-prep #print-area .sheet { font-size: 11px; }
+  body.print-prep #print-area .sheet-title { font-size: 16px; }
+  body.print-prep #print-area .section { margin-bottom: 12px; }
+  body.print-prep #print-area .section-title { font-size: 11px; margin-bottom: 8px; }
+  body.print-prep #print-area .passage-row,
+  body.print-prep #print-area .summary-item,
+  body.print-prep #print-area .sentence-text,
+  body.print-prep #print-area .point-line,
+  body.print-prep #print-area .point-title { font-size: 11px; line-height: 1.45; }
+  body.print-prep #print-area .summary-box,
+  body.print-prep #print-area .sentence-card,
+  body.print-prep #print-area .passage-box { padding: 10px 12px; }
+  body.print-prep #print-area .point-item { padding: 6px 8px; }
+  body.print-prep #print-area .student-sentence-box { padding: 8px 10px; }
+  body.print-prep #print-area .student-sentence-row { padding: 5px 0; gap: 7px; }
+  body.print-prep #print-area .sentence-edit-btn,
+  body.print-prep #print-area .summary-edit-btn,
+  body.print-prep #print-area .point-actions { display: none !important; }
+  body.print-prep #print-area .print-sheet-wrap { display: flex; flex-direction: column; }
+  body.print-prep #print-area .sheet { flex: 1 1 auto; }
+  body.print-prep #print-area .inline-vocab-mark,
+  body.print-prep #print-area .image-blank-token.vocab-overlap {
+    background: #dbeafe !important;
+    color: #1e3a8a !important;
+  }
+  body.print-prep #print-area .inline-grammar-mark,
+  body.print-prep #print-area .image-blank-token.grammar-overlap {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+  }
+  body.print-prep #print-area .student-sheet .student-sentence-row,
+  body.printing-mode #print-area .student-sheet .student-sentence-row {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 8px;
+  }
+  body.print-prep #print-area .student-sheet .student-sentence-meta,
+  body.printing-mode #print-area .student-sheet .student-sentence-meta {
+    width: 78px;
+    column-gap: 5px;
+  }
+  body.print-prep #print-area .student-sheet .sentence-marker-group.student-markers,
+  body.printing-mode #print-area .student-sheet .sentence-marker-group.student-markers {
+    gap: 3px;
+  }
+  body.print-prep #print-area .sentence-card,
+  body.printing-mode #print-area .sentence-card {
+    overflow: visible;
+  }
+  body.print-prep #print-area .sentence-head,
+  body.printing-mode #print-area .sentence-head {
+    padding-left: 30px;
+    overflow: visible;
+  }
+  body.print-prep #print-area .sentence-meta.with-badge.leading-marker-layout,
+  body.printing-mode #print-area .sentence-meta.with-badge.leading-marker-layout {
+    position: relative;
+    overflow: visible;
   }
   .image-export-page .sentence-edit-btn,
   .image-export-page .summary-edit-btn,
@@ -2643,7 +2738,7 @@ function segmentedBlankBoxHtml(sourceText, vocabTargets, grammarTargets, figurat
   var pieces = source.match(/\S+|\s+/g) || [];
   var cursor = 0;
 
-  if (renderMode === "screen") {
+  if (renderMode === "screen" || renderMode === "print") {
     var unitHtml = [];
     var index = 0;
 
@@ -4798,6 +4893,7 @@ function switchViewMode(mode) {
 }
 
 function cleanupPrintArea() {
+  document.body.classList.remove("print-prep");
   document.body.classList.remove("printing-mode");
   document.getElementById("print-area").className = "";
   document.getElementById("print-area").innerHTML = "";
@@ -5242,10 +5338,19 @@ async function startPrint(mode) {
     '</div>';
   }).join("");
 
-  await waitForPaint();
-  stabilizeImageBlankBoxes(printArea);
-  await waitForPaint();
+  document.body.classList.add("print-prep");
   document.body.classList.add("printing-mode");
+  if (document.fonts && document.fonts.ready) {
+    try {
+      await document.fonts.ready;
+    } catch (error) {}
+  }
+  await waitForPaint();
+  decorateScreenBlankBoxes(printArea);
+  await waitForPaint();
+  decorateScreenBlankBoxes(printArea);
+  await waitForPaint();
+  document.body.classList.remove("print-prep");
   window.print();
 }
 
