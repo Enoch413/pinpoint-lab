@@ -80,6 +80,20 @@ assert.ok(!details().includes('>빈칸</span>') && !details().includes('>함축 
 sentence.useAutoMarks = true;
 sentence.manualMarks = null;
 sentence.manualMarkerOverride = null;
+
+const renderTeacher = context.renderSentenceCards;
+const renderStudent = context.renderStudentSentenceBlock;
+context.renderSentenceCards = () => { throw new Error('Student output must not render teacher cards'); };
+assert.ok(context.buildRecordSheetHtml(record, 'student', 'screen').includes('student-sheet'));
+context.renderSentenceCards = renderTeacher;
+context.renderStudentSentenceBlock = () => { throw new Error('Teacher output must not render student cards'); };
+assert.ok(context.buildRecordSheetHtml(record, 'teacher', 'print').includes('sentence-list'));
+context.renderStudentSentenceBlock = renderStudent;
+
+const sample = JSON.parse(fs.readFileSync(path.join(__dirname, '../samples/MASTER_ANALYSIS.sample.json'), 'utf8'));
+const sampleRecord = context.buildRecordFromJsonPassage(sample.PASSAGES[0], 0, 'public-sample');
+assert.equal(sampleRecord.summary.oneSentence, '작은 습관과 연습은 학습을 돕는다.');
+assert.equal(sampleRecord.sentences.flatMap(sentence => sentence.points).length, 3);
 assert.equal((details().match(/class="point-item"/g) || []).length, 5, 'Restoring automatic marks restores all explanations');
 assert.equal(JSON.stringify(sentence.points), sourcePoints, 'Hiding explanations must preserve imported points');
 console.log('PASS: six star filters, teacher/student output, linked marker/explanation visibility, reversible edits, original data preserved');
