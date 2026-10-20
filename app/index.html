@@ -2259,6 +2259,19 @@
 
     <div id="error-box"></div>
 
+    <div class="left-card">
+      <label class="input-label" for="point-star-filter">출제 포인트 별점</label>
+      <select id="point-star-filter" class="text-input" onchange="renderRecord()" aria-describedby="point-star-filter-help">
+        <option value="all">별 전체 출력</option>
+        <option value="3">별 3개만 출력 (★★★)</option>
+        <option value="2">별 2개만 출력 (★★)</option>
+        <option value="1">별 1개만 출력 (★)</option>
+        <option value="1-2">별 1~2개 출력 (★~★★)</option>
+        <option value="2-3">별 2~3개 출력 (★★~★★★)</option>
+      </select>
+      <div class="hint" id="point-star-filter-help">미리보기·프린트·이미지 저장에 함께 적용됩니다. 원문, 별점 없는 요약·글의 순서, 직접 수정한 표시는 유지됩니다.</div>
+    </div>
+
     <div class="left-action-stack">
       <button id="gen-btn" onclick="generate()">JSON 자료 불러오기</button>
       <button id="print-btn" onclick="openPrintOptions()" disabled>프린트</button>
@@ -4827,10 +4840,24 @@ function renderStudentSummaryHtml(summary) {
   '</div></div>';
 }
 
+function filterSentencesByStars(sentences) {
+  var selection = document.getElementById("point-star-filter").value;
+  if (selection === "all") return sentences;
+  var allowedStars = selection.split("-").map(Number);
+  return sentences.map(function (sentence) {
+    return Object.assign({}, sentence, {
+      points: sentence.points.filter(function (point) {
+        return allowedStars.indexOf(point.stars) !== -1;
+      })
+    });
+  });
+}
+
 function buildRecordSheetBody(record, viewMode, renderMode) {
+  var sentences = filterSentencesByStars(record.sentences);
   var notice = record.missingPassage ? '<div class="notice">원문이 입력되지 않아, 문장 번호는 분석표에 있는 번호를 기준으로만 보여줍니다.</div>' : "";
-  var teacherSentenceCards = renderSentenceCards(record.sentences, { showPointDetails: true, showNumberBadge: true, markersBeforeBadge: true, renderMode: renderMode, enablePointMove: renderMode === "screen" });
-  var studentSentenceCards = renderStudentSentenceBlock(record.sentences, renderMode);
+  var teacherSentenceCards = renderSentenceCards(sentences, { showPointDetails: true, showNumberBadge: true, markersBeforeBadge: true, renderMode: renderMode, enablePointMove: renderMode === "screen" });
+  var studentSentenceCards = renderStudentSentenceBlock(sentences, renderMode);
   return viewMode === "student"
     ? renderStudentSummaryHtml(record.summary) +
       '<div class="section"><div class="section-title">문장별 출제 포인트</div>' + studentSentenceCards + '</div>'
