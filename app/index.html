@@ -2370,7 +2370,7 @@
         <label class="edit-marker-check"><input id="edit-descriptive-marker" type="checkbox"> ★ 서술형</label>
         <label class="edit-marker-check"><input id="edit-insert-marker" type="checkbox"> ▶ 문장 삽입</label>
       </div>
-      <div class="edit-help">여기서 저장하면 해당 문장의 앞 표시를 직접 지정합니다. 잘못 붙은 문장은 해당 문장에서 지우고, 맞는 문장에서 다시 추가하면 됩니다.</div>
+      <div class="edit-help">기호나 강조 표시를 지우면 해당 출제 포인트 설명도 함께 숨겨집니다. 자동 강조 표시를 지우려면 위의 자동 추출 유지 체크를 해제하세요. 다시 표시하거나 자동값 복원을 누르면 설명도 돌아옵니다.</div>
     </div>
     <div class="edit-modal-actions">
       <button class="edit-action ghost" type="button" onclick="closeSentenceEditor()">취소</button>
@@ -4765,6 +4765,17 @@ function buildSentenceMarkerHtml(sentence, extraClass) {
 
 function renderSentenceCards(sentences, options) {
   return sentences.map(function (sentence) {
+    var markerState = buildEffectiveSentenceMarkerState(sentence);
+    var markTargets = collectSentenceMarkTargets(sentence);
+    var visiblePoints = sentence.points.filter(function (point) {
+      if (point.type === "서술형") return markerState.descriptive;
+      if (point.type === "문장 삽입") return markerState.insert;
+      if (sentence.useAutoMarks !== false) return true;
+      var targets = point.type === "빈칸" ? markTargets.blankTargets
+        : point.type === "어휘" ? markTargets.vocabTargets
+        : point.type === "함축 의미" ? markTargets.figurativeTargets : null;
+      return !targets || targets.indexOf(cleanMdInline(point.title)) !== -1;
+    });
     var sentenceMarkerHtml = buildSentenceMarkerHtml(sentence, options.showNumberBadge && options.markersBeforeBadge ? "leading-markers" : "");
     var sentenceTextHtml = renderSentenceTextWithBlank(sentence, options.renderMode);
     var sentenceMetaHtml = "";
@@ -4779,8 +4790,8 @@ function renderSentenceCards(sentences, options) {
     } else if (sentenceMarkerHtml) {
       sentenceMetaHtml = '<div class="sentence-meta">' + sentenceMarkerHtml + '</div>';
     }
-    if (options.showPointDetails && sentence.points.length) {
-      pointsHtml = '<div class="point-list">' + sentence.points.map(function (point) {
+    if (options.showPointDetails && visiblePoints.length) {
+      pointsHtml = '<div class="point-list">' + visiblePoints.map(function (point) {
         var showPointTitle = point.type !== "문장 삽입" && point.type !== "서술형";
         return '<div class="point-item">' +
           '<div class="point-top">' + typeBadgeHtml(point.type) + starsHtml(point.stars) + (showPointTitle ? '<div class="point-title">' + escapeHtml(point.title) + '</div>' : '') + '</div>' +
@@ -4789,7 +4800,7 @@ function renderSentenceCards(sentences, options) {
         '</div>';
       }).join("") + '</div>';
     }
-    return '<div class="sentence-card' + (sentence.points.length ? '' : ' empty') + '">' +
+    return '<div class="sentence-card' + (visiblePoints.length ? '' : ' empty') + '">' +
       '<div class="sentence-head">' + sentenceMetaHtml + '<div class="sentence-text"><span class="sentence-flow">' + sentenceTextHtml + '</span></div>' + editButtonHtml + '</div>' +
       pointsHtml +
     '</div>';

@@ -56,4 +56,30 @@ marks = context.collectSentenceMarkTargets(context.filterSentencesByStars(record
 assert.deepEqual(Array.from(marks.grammarTargets), ['beta'], 'Keep manual edits');
 elements.get('point-star-filter').value = 'all';
 assert.strictEqual(context.filterSentencesByStars(record.sentences), record.sentences);
-console.log('PASS: six star filters, teacher/student screen and print, automatic marks, original text, manual edits, non-destructive reset');
+const sentence = record.sentences[0];
+const sourcePoints = JSON.stringify(sentence.points);
+function details(mode = 'screen') {
+  return context.buildRecordSheetHtml(record, 'teacher', mode);
+}
+for (const mode of ['screen', 'print']) {
+  sentence.manualMarkerOverride = { orderLabels: [], descriptive: false, insert: true };
+  assert.ok(!details(mode).includes('marker-descriptive'));
+  assert.ok(!details(mode).includes('>서술형</span>'), 'Removing the star must hide its explanation');
+  assert.ok(details(mode).includes('>문장 삽입</span>'), 'Keep the other explanation');
+  sentence.manualMarkerOverride = { orderLabels: [], descriptive: true, insert: false };
+  assert.ok(details(mode).includes('>서술형</span>'), 'Rechecking restores the explanation');
+  assert.ok(!details(mode).includes('>문장 삽입</span>'), 'Removing insertion marker hides its explanation');
+  sentence.manualMarkerOverride = { orderLabels: [], descriptive: false, insert: false };
+  assert.equal((details(mode).match(/class="point-item"/g) || []).length, 3);
+}
+sentence.useAutoMarks = false;
+sentence.manualMarks = { vocab: ['beta'] };
+assert.equal((details().match(/class="point-item"/g) || []).length, 1, 'Only the manually retained vocabulary explanation remains');
+assert.ok(details().includes('>어휘</span>'));
+assert.ok(!details().includes('>빈칸</span>') && !details().includes('>함축 의미</span>'));
+sentence.useAutoMarks = true;
+sentence.manualMarks = null;
+sentence.manualMarkerOverride = null;
+assert.equal((details().match(/class="point-item"/g) || []).length, 5, 'Restoring automatic marks restores all explanations');
+assert.equal(JSON.stringify(sentence.points), sourcePoints, 'Hiding explanations must preserve imported points');
+console.log('PASS: six star filters, teacher/student output, linked marker/explanation visibility, reversible edits, original data preserved');
