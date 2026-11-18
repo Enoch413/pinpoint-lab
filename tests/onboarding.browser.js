@@ -27,7 +27,9 @@ async page => {
   check(await page.getByRole('group', { name: '학습지 보기 선택' }).isVisible(), 'Named view controls');
   check(await page.locator('#record-view h2.sheet-title').count() === 1, 'Document heading');
   check(await page.locator('#record-view h3.section-title').count() === 2, 'Summary and sentence headings');
-  check((await page.locator('#record-view').textContent()).includes('작은 습관과 연습은 학습을 돕는다.'), 'Sample summary renders');
+  const output = await page.locator('#record-view').textContent();
+  check(output.includes('Small habits support learning.'), 'Sample English summary renders');
+  check(!output.includes('한 문장 요약') && !output.includes('작은 습관과 연습은 학습을 돕는다.'), 'Korean summary label and content stay hidden');
   await page.setViewportSize({ width: 375, height: 850 });
   for (const el of await page.locator('#record-view .sentence-edit-btn, #record-view .summary-edit-btn, #record-view .point-move-btn, #record-view .point-move-input, #view-tabs button, #record-tabs button, #point-star-filter, #record-label-input').all()) {
     const box = await el.boundingBox();

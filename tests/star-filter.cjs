@@ -94,6 +94,14 @@ const sample = JSON.parse(fs.readFileSync(path.join(__dirname, '../samples/MASTE
 const sampleRecord = context.buildRecordFromJsonPassage(sample.PASSAGES[0], 0, 'public-sample');
 assert.equal(sampleRecord.summary.oneSentence, '작은 습관과 연습은 학습을 돕는다.');
 assert.equal(sampleRecord.sentences.flatMap(sentence => sentence.points).length, 3);
+for (const view of ['teacher', 'student']) {
+  for (const target of ['screen', 'print']) {
+    const output = context.buildRecordSheetHtml(sampleRecord, view, target);
+    assert.ok(!output.includes('한 문장 요약'), `${view}/${target}: omit the Korean summary label and heading`);
+    assert.ok(!output.includes(sampleRecord.summary.oneSentence), `${view}/${target}: omit the Korean summary content`);
+    assert.ok(output.includes(sampleRecord.summary.english), `${view}/${target}: keep the English summary`);
+  }
+}
 assert.equal((details().match(/class="point-item"/g) || []).length, 5, 'Restoring automatic marks restores all explanations');
 assert.equal(JSON.stringify(sentence.points), sourcePoints, 'Hiding explanations must preserve imported points');
 console.log('PASS: six star filters, teacher/student output, linked marker/explanation visibility, reversible edits, original data preserved');

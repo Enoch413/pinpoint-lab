@@ -4241,11 +4241,10 @@ function renderStudentSentenceBlock(sentences, renderMode) {
 function renderTeacherSummaryHtml(summary) {
   var answerOptions = splitAnswerOptions(summary.answerOptions, summary);
   var orderHtml = renderSummaryOrderItem(summary);
-  return '<div class="section"><h3 class="section-title">주제 / 제목 / 한 문장 요약</h3><div class="summary-box">' +
+  return '<div class="section"><h3 class="section-title">주제 / 제목 / 영어 요약문</h3><div class="summary-box">' +
     '<div class="summary-item"><span class="summary-label">주제</span>' + escapeHtml(summary.topic) + '</div>' +
     '<div class="summary-item"><span class="summary-label">제목</span>' + escapeHtml(summary.title) + '</div>' +
     '<hr class="summary-divider">' +
-    '<div class="summary-item"><span class="summary-label">한 문장 요약</span>' + escapeHtml(summary.oneSentence) + '</div>' +
     '<div class="summary-item summary-inline"><span class="summary-label">영어 요약문</span><span class="summary-english">' + renderSummaryEnglish(summary) + '</span></div>' +
     ((answerOptions.a || answerOptions.b) ? renderSummaryPairItem("정답 가능 표현", answerOptions.a, answerOptions.b) : '') +
     '<div class="summary-tip">' + escapeHtml(summary.strategy) + '</div>' +
@@ -4256,11 +4255,10 @@ function renderTeacherSummaryHtml(summary) {
 
 function renderStudentSummaryHtml(summary) {
   var orderHtml = renderStudentSummaryOrderHtml(summary);
-  return '<div class="section"><h3 class="section-title">주제 / 제목 / 한 문장 요약</h3><div class="summary-box">' +
+  return '<div class="section"><h3 class="section-title">주제 / 제목 / 영어 요약문</h3><div class="summary-box">' +
     '<div class="student-summary-grid">' +
       '<div class="student-summary-row"><div class="student-summary-label">주제</div><div class="student-summary-copy">' + escapeHtml(summary.topic) + '</div></div>' +
       '<div class="student-summary-row"><div class="student-summary-label">제목</div><div class="student-summary-copy">' + escapeHtml(summary.title) + '</div></div>' +
-      '<div class="student-summary-row"><div class="student-summary-label">한 문장 요약</div><div class="student-summary-copy">' + escapeHtml(summary.oneSentence) + '</div></div>' +
       '<div class="student-summary-row"><div class="student-summary-label">영어 요약문</div><div class="student-summary-copy summary-english">' + renderSummaryEnglish(summary) + '</div></div>' +
       (orderHtml || '') +
     '</div>' +
