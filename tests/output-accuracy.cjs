@@ -94,4 +94,55 @@ assert.ok(element('edit-vocab-targets-feedback').textContent.includes('absent ph
 element('summary-underline-a').value = 'Alpha';
 element('summary-underline-b').value = 'Alpha';
 assert.strictEqual(c.updateMatchFeedback('Alpha beta.', ['summary-underline-a', 'summary-underline-b'], true), element('summary-underline-b'), 'Summary feedback must follow exclusive underline matching');
+
+const sourceData = fixture();
+const sourceSnapshot = JSON.stringify(sourceData);
+c.records = [0, 1].map(index => c.buildRecordFromJsonPassage(sourceData, index, 'bulk-test'));
+c.activeRecordIndex = 1;
+c.activeViewMode = 'student';
+element('point-star-filter').value = '1';
+c.records[0].sentences[0].manualMarkerOverride = { descriptive: false, insert: true, orderLabels: ['(B)'] };
+c.records[0].sentences[0].manualMarks = { grammar: ['beta'] };
+c.records[1].sentences[1].manualMarkerOverride = { descriptive: true };
+c.importedRecordsSnapshot = JSON.stringify(c.records);
+let confirmRemoval = false;
+let removalPrompts = 0;
+c.window.confirm = () => { removalPrompts++; return confirmRemoval; };
+const beforeRemoval = JSON.stringify(c.records);
+c.removeAllDescriptivePoints();
+assert.equal(JSON.stringify(c.records), beforeRemoval, 'Cancel preserves every tab and edit');
+confirmRemoval = true;
+element('remove-descriptive-btn').disabled = true;
+c.removeAllDescriptivePoints();
+element('remove-descriptive-btn').disabled = false;
+element('result-area').inert = true;
+c.removeAllDescriptivePoints();
+element('result-area').inert = false;
+assert.equal(removalPrompts, 1, 'Export/import locks prevent bulk deletion');
+c.removeAllDescriptivePoints();
+assert.equal(removalPrompts, 2);
+assert.equal(c.activeRecordIndex, 1);
+assert.equal(c.activeViewMode, 'student');
+assert.equal(element('point-star-filter').value, '1', 'Keep the filter while deleting hidden points');
+assert.equal(c.hasWorkspaceEdits(), true, 'Deletion is included in the existing discard warning');
+assert.deepEqual(Array.from(c.records[0].sentences[0].manualMarkerOverride.orderLabels), ['(B)']);
+assert.equal(c.records[0].sentences[0].manualMarkerOverride.insert, true);
+assert.deepEqual(Array.from(c.records[0].sentences[0].manualMarks.grammar), ['beta']);
+assert.equal(c.records[1].sentences[1].manualMarkerOverride, null, 'Clear manually forced descriptive stars too');
+element('point-star-filter').value = 'all';
+for (const item of c.records) {
+  assert.equal(item.sentences[0].points.length, 2, 'Keep insertion and vocabulary points');
+  assert.equal(item.sentences[0].text, 'Alpha beta constructor.');
+  for (const view of ['teacher', 'student']) for (const target of ['screen', 'print']) {
+    const sheet = c.buildRecordSheetHtml(item, view, target);
+    assert.ok(!sheet.includes('WRITTEN explanation') && !sheet.includes('marker-descriptive'), `${view}/${target}: remove written explanations and stars on every tab`);
+    assert.ok(sheet.includes('marker-insert') && sheet.includes('Alpha'), 'Keep other markers and text');
+  }
+}
+assert.equal(JSON.stringify(sourceData), sourceSnapshot, 'Never modify the source JSON payload');
+c.removeAllDescriptivePoints();
+assert.equal(removalPrompts, 2, 'Repeated removal without targets needs no confirmation');
+assert.ok(element('bulk-point-status').textContent.includes('없습니다'));
+c.records = [];
+c.removeAllDescriptivePoints();
 console.log('PASS: moved-point overrides, explicit hiding, case-consistent explanations, constructor, circled references, verified producer formats');

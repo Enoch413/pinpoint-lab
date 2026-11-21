@@ -135,6 +135,7 @@ async page => {
     check(await page.locator('[data-view-mode="student"]').isDisabled(), 'Lock view while exporting');
     check(await page.locator('#point-star-filter').isDisabled(), 'Lock filter while exporting');
     check(await page.locator('#gen-btn').isDisabled(), 'Lock reimport while exporting');
+    check(await page.locator('#remove-descriptive-btn').isDisabled(), 'Lock bulk deletion while exporting');
     await page.locator('[data-view-mode="student"]').evaluate(el => el.click());
     const race = await page.evaluate(async () => {
       workflowResume();
@@ -160,6 +161,27 @@ async page => {
     const title = await page.locator('[data-record-index="0"]').boundingBox();
     check(title.x + title.width <= 376, 'Long unbroken title must wrap inside viewport');
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Long title must not expand page');
+    const beforeRemoval = await page.evaluate(() => JSON.stringify(records));
+    page.once('dialog', dialog => dialog.dismiss());
+    await page.getByRole('button', { name: '모든 지문 서술형 제거', exact: true }).click();
+    check(await page.evaluate(() => JSON.stringify(records)) === beforeRemoval, 'Cancel bulk deletion preserves every tab');
+    await page.locator('#point-star-filter').selectOption('1');
+    await page.locator('#remove-descriptive-btn').focus();
+    page.once('dialog', dialog => dialog.accept());
+    await page.keyboard.press('Enter');
+    check(await page.locator('#bulk-point-status').textContent() === '모든 지문 2개의 서술형 포인트 2개와 서술형 ★ 표시를 제거했습니다. 프린트·PNG에도 적용됩니다.', 'Announce all-tab removal count');
+    check(await page.locator('#remove-descriptive-btn').evaluate(el => el === document.activeElement), 'Keep bulk action keyboard focus');
+    check(await page.evaluate(() => records.every(record => record.sentences.every(sentence => sentence.points.every(point => point.type !== '서술형') && !buildEffectiveSentenceMarkerState(sentence).descriptive))), 'Delete written points and stars even on inactive tabs and hidden ratings');
+    await page.locator('#point-star-filter').selectOption('all');
+    for (const index of [0, 1]) {
+      await page.locator(`[data-record-index="${index}"]`).click();
+      for (const mode of ['teacher', 'student']) {
+        await page.locator(`[data-view-mode="${mode}"]`).click();
+        check(await page.locator('#record-view .marker-descriptive').count() === 0 && !(await page.locator('#record-view').textContent()).includes('WRITTEN explanation'), 'No written marker/detail on either view or tab');
+      }
+    }
+    check(await page.evaluate(() => hasWorkspaceEdits()), 'Bulk deletion marks workspace edited');
+    passed.push('Confirmed all-tab written-point deletion, cancellation, filter independence, keyboard focus and export lock');
     check(errors.length === 0, 'No application exceptions: ' + errors.join('; '));
     passed.push('Long-title boundary and no application exceptions');
     const result = { passed, pngSizes, contrast };

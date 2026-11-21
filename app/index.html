@@ -943,6 +943,10 @@
     flex-wrap: wrap;
   }
 
+  #bulk-point-tools { width: 100%; }
+  #remove-descriptive-btn { min-height: 44px; border-radius: 12px; }
+  #remove-descriptive-btn:disabled { opacity: .45; cursor: not-allowed; }
+
   #record-toolbar label {
     font-family: inherit;
     font-size: 11px;
@@ -2072,8 +2076,13 @@
           <label for="record-label-input">현재 지문 제목</label>
           <input id="record-label-input" type="text" placeholder="지문 제목 입력" disabled>
         </div>
+        <div id="bulk-point-tools">
+          <button id="remove-descriptive-btn" class="edit-action ghost" type="button" onclick="removeAllDescriptivePoints()" aria-describedby="bulk-point-help">모든 지문 서술형 제거</button>
+          <div class="hint" id="bulk-point-help">불러온 모든 지문의 서술형 ★ 기호와 설명을 함께 제거합니다. 원본 JSON 파일은 유지됩니다.</div>
+          <div id="bulk-point-status" class="status" role="status" aria-atomic="true"></div>
+        </div>
         <div class="print-note">프린트 시에는 현재 지문 또는 모든 지문을 선택할 수 있습니다.</div>
-        <div class="print-note">제목·표시·포인트 이동 변경은 현재 창에만 적용됩니다. 새로고침하거나 창을 닫으면 사라지므로 프린트나 이미지로 보관하세요.</div>
+        <div class="print-note">제목·표시·포인트 이동·삭제 변경은 현재 창에만 적용됩니다. 새로고침하거나 창을 닫으면 사라지므로 프린트나 이미지로 보관하세요.</div>
       </div>
       <div id="record-view"></div>
     </div>
@@ -2292,6 +2301,35 @@ window.addEventListener("afterprint", function () {
 
 function hasWorkspaceEdits() {
   return records.length > 0 && JSON.stringify(records) !== importedRecordsSnapshot;
+}
+
+function removeAllDescriptivePoints() {
+  if (!records.length || document.getElementById("remove-descriptive-btn").disabled || document.getElementById("result-area").inert) return;
+  var status = document.getElementById("bulk-point-status");
+  var pointCount = 0;
+  var markerCount = 0;
+  records.forEach(function (record) {
+    record.sentences.forEach(function (sentence) {
+      pointCount += sentence.points.filter(function (point) { return point.type === "서술형"; }).length;
+      if (buildEffectiveSentenceMarkerState(sentence).descriptive) markerCount += 1;
+    });
+  });
+  if (!pointCount && !markerCount) {
+    status.textContent = "제거할 서술형 포인트나 ★ 표시가 없습니다.";
+    return;
+  }
+  if (!window.confirm("불러온 모든 지문 " + records.length + "개의 서술형 포인트 " + pointCount + "개와 서술형 ★ 표시를 제거할까요? 다른 포인트와 원문은 유지됩니다. 복원하려면 원본 JSON을 다시 불러와야 합니다.")) return;
+  records.forEach(function (record) {
+    record.sentences.forEach(function (sentence) {
+      sentence.points = sentence.points.filter(function (point) { return point.type !== "서술형"; });
+      if (sentence.manualMarkerOverride) {
+        delete sentence.manualMarkerOverride.descriptive;
+        if (!Object.keys(sentence.manualMarkerOverride).length) sentence.manualMarkerOverride = null;
+      }
+    });
+  });
+  renderRecord();
+  status.textContent = "모든 지문 " + records.length + "개의 서술형 포인트 " + pointCount + "개와 서술형 ★ 표시를 제거했습니다. 프린트·PNG에도 적용됩니다.";
 }
 
 window.addEventListener("beforeunload", function (event) {
@@ -4666,12 +4704,13 @@ async function generate() {
     if (!uploadedJsonFiles.length) throw new Error("분석 JSON 파일을 먼저 올려주세요.");
     var nextRecords = await getJsonRecords();
     if (!nextRecords.length) throw new Error("JSON 안에 PASSAGES 데이터가 없습니다.");
-    if (hasWorkspaceEdits() && !window.confirm("현재 창에서 수정한 제목·표시·포인트 이동 내용이 있습니다. 새 자료를 불러오면 이 변경 내용이 사라집니다. 변경을 버리고 불러올까요?")) return;
+    if (hasWorkspaceEdits() && !window.confirm("현재 창에서 수정한 제목·표시·포인트 이동·삭제 내용이 있습니다. 새 자료를 불러오면 이 변경 내용이 사라집니다. 변경을 버리고 불러올까요?")) return;
 
     records = nextRecords;
     importedRecordsSnapshot = JSON.stringify(records);
     activeRecordIndex = 0;
     activeViewMode = "teacher";
+    document.getElementById("bulk-point-status").textContent = "";
 
     renderViewTabs();
     renderTabs();
