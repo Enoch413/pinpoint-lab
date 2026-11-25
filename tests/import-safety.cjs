@@ -9,7 +9,7 @@ const elements = new Map();
 function element(id) {
   if (!elements.has(id)) elements.set(id, {
     value: id === 'point-star-filter' ? 'all' : '', style: {}, disabled: false,
-    textContent: '', innerHTML: '', children: [], addEventListener() {}, setAttribute() {}, removeAttribute() {},
+    textContent: '', innerHTML: '', children: [], addEventListener() {}, setAttribute() {}, removeAttribute() {}, focus() {},
     classList: { add() {}, remove() {} }, querySelectorAll() { return []; }
   });
   return elements.get(id);
@@ -60,10 +60,14 @@ function build(data) {
   assert.equal(build(ordered).sentences.length, 3);
   assert.equal(build(ordered).sentences[0].orderLabels[0], '(A)');
 
-  await load([file({ PASSAGES: [passage(), { ...passage(), '번호': '2' }] })]);
+  await load([file({ PASSAGES: [passage()] }, 'first.json'), file({ PASSAGES: [{ ...passage(), '번호': '2' }] }, 'second.json')]);
   assert.equal(context.records.length, 2);
   assert.equal(confirmations, 0);
-  context.activeRecordIndex = 1;
+  const firstRecord = context.records[0];
+  context.moveRecord(0, 1);
+  assert.strictEqual(context.records[1], firstRecord, 'Move the selected record from a different file without rebuilding it');
+  assert.equal(context.activeRecordIndex, 1);
+  assert.equal(context.hasWorkspaceEdits(), true, 'A change to order alone triggers the existing discard warning');
   context.activeViewMode = 'student';
   context.renameActiveRecord('Edited title');
   context.records[1].sentences[0].manualMarks = { vocab: ['beta'] };
@@ -96,6 +100,8 @@ function build(data) {
   context.uploadedJsonFiles = [{ name: 'slow.json', text() { return new Promise(resolve => { finishRead = resolve; }); } }];
   const pendingImport = context.generate();
   assert.equal(element('result-area').inert, true, 'Prevent unfinished edits while reading a replacement');
+  context.moveRecord(1, 0);
+  assert.equal(context.activeRecordIndex, 1, 'Block reordering during reimport');
   assert.equal(element('print-btn').disabled, true);
   assert.equal(element('image-btn').disabled, true);
   assert.strictEqual(context.records, previousRecords);
@@ -116,6 +122,7 @@ function build(data) {
   await load([file({ PASSAGES: [passage()] })]);
   assert.equal(confirmations, 2);
   assert.equal(context.records.length, 1);
+  assert.equal(element('record-order-tools').hidden, true, 'Hide order controls for a single passage');
   assert.equal(context.records[0].label, '지문 1');
   await load([file({ PASSAGES: [passage()] })]);
   assert.equal(confirmations, 2, 'Unedited workspace should not prompt');

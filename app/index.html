@@ -944,6 +944,15 @@
   }
 
   #bulk-point-tools { width: 100%; }
+  #record-order-tools { width: 100%; }
+  #record-order-tools:not([hidden]) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  #record-position { width: auto; min-height: 44px; }
+  #record-drag-help { flex-basis: 100%; margin: 0; }
+  .record-tab-item { display: flex; min-width: 0; max-width: 100%; border-radius: 8px; }
+  .record-tab-item.is-dragging { opacity: .55; }
+  .record-tab-item.is-drop-target { outline: 2px solid #174f59; outline-offset: -2px; background: #edf5f0; }
+  .record-drag-handle { display: grid; place-items: center; flex: 0 0 44px; min-height: 44px; color: #174f59; cursor: grab; touch-action: none; user-select: none; }
+  .record-drag-handle:active { cursor: grabbing; }
   #remove-descriptive-btn { min-height: 44px; border-radius: 12px; }
   #remove-descriptive-btn:disabled { opacity: .45; cursor: not-allowed; }
 
@@ -2076,13 +2085,19 @@
           <label for="record-label-input">현재 지문 제목</label>
           <input id="record-label-input" type="text" placeholder="지문 제목 입력" disabled>
         </div>
+        <div id="record-order-tools" role="group" aria-label="지문 순서 변경" hidden>
+          <p class="hint" id="record-drag-help">탭 옆 손잡이(⠿)를 끌어서 옮길 위치의 탭에 놓으세요.</p>
+          <label class="hint" for="record-position">선택 지문 위치</label>
+          <select id="record-position" class="text-input" onchange="moveRecord(activeRecordIndex, Number(this.value))"></select>
+          <span id="record-order-status" class="status" role="status" aria-atomic="true"></span>
+        </div>
         <div id="bulk-point-tools">
           <button id="remove-descriptive-btn" class="edit-action ghost" type="button" onclick="removeAllDescriptivePoints()" aria-describedby="bulk-point-help">모든 지문 서술형 제거</button>
           <div class="hint" id="bulk-point-help">불러온 모든 지문의 서술형 ★ 기호와 설명을 함께 제거합니다. 원본 JSON 파일은 유지됩니다.</div>
           <div id="bulk-point-status" class="status" role="status" aria-atomic="true"></div>
         </div>
         <div class="print-note">프린트 시에는 현재 지문 또는 모든 지문을 선택할 수 있습니다.</div>
-        <div class="print-note">제목·표시·포인트 이동·삭제 변경은 현재 창에만 적용됩니다. 새로고침하거나 창을 닫으면 사라지므로 프린트나 이미지로 보관하세요.</div>
+        <div class="print-note">지문 순서와 편집 내용은 현재 창에만 적용됩니다. 새로고침하거나 창을 닫으면 사라지므로 프린트나 이미지로 보관하세요.</div>
       </div>
       <div id="record-view"></div>
     </div>
@@ -4170,13 +4185,22 @@ function starsHtml(count) {
   return count ? '<span class="stars">' + "★".repeat(count) + "☆".repeat(Math.max(0, 3 - count)) + '</span>' : "";
 }
 
-function renderTabs() {
+function renderTabs(focusedIndex) {
   var focused = document.activeElement;
-  var focusedIndex = focused ? focused.getAttribute("data-record-index") : null;
+  if (focusedIndex === undefined) focusedIndex = focused ? focused.getAttribute("data-record-index") : null;
+  clearRecordDrag();
   var html = records.map(function (record, index) {
-    return '<button class="record-tab' + (index === activeRecordIndex ? ' active' : '') + '" aria-pressed="' + (index === activeRecordIndex) + '" data-record-index="' + index + '" onclick="switchRecord(' + index + ')">' + escapeHtml(record.label || record.defaultLabel || getDefaultRecordLabel(index)) + '</button>';
+    var tab = '<button class="record-tab' + (index === activeRecordIndex ? ' active' : '') + '" aria-pressed="' + (index === activeRecordIndex) + '" data-record-index="' + index + '" onclick="switchRecord(' + index + ')">' + escapeHtml(getRecordDisplayLabel(record, index)) + '</button>';
+    if (records.length < 2) return tab;
+    return '<div class="record-tab-item" data-tab-position="' + index + '">' + tab + '<span class="record-drag-handle" aria-hidden="true" title="드래그하여 지문 이동">⠿</span></div>';
   }).join("");
   document.getElementById("record-tabs").innerHTML = html;
+  document.getElementById("record-order-tools").hidden = records.length < 2;
+  var position = document.getElementById("record-position");
+  position.innerHTML = records.map(function (record, index) {
+    return '<option value="' + index + '">' + (index + 1) + '번째</option>';
+  }).join("");
+  position.value = String(activeRecordIndex);
   var nextFocus = focusedIndex !== null ? document.querySelector('#record-tabs [data-record-index="' + focusedIndex + '"]') : null;
   if (nextFocus) nextFocus.focus();
 }
@@ -4367,10 +4391,94 @@ function switchRecord(index) {
   closeSentenceEditor();
   closeSummaryEditor();
   activeRecordIndex = index;
+  document.getElementById("record-order-status").textContent = "";
   renderViewTabs();
   renderTabs();
   renderRecord();
 }
+
+function canReorderRecords() {
+  return records.length > 1 && !document.getElementById("record-position").disabled && !document.getElementById("result-area").inert;
+}
+
+function moveRecord(sourceIndex, targetIndex) {
+  if (!canReorderRecords() || !Number.isInteger(sourceIndex) || !Number.isInteger(targetIndex) ||
+      !records[sourceIndex] || !records[targetIndex] || sourceIndex === targetIndex) return;
+  var activeRecord = records[activeRecordIndex];
+  var focusedIndex = document.activeElement ? document.activeElement.getAttribute("data-record-index") : null;
+  var focusedRecord = focusedIndex === null ? null : records[Number(focusedIndex)];
+  var record = records.splice(sourceIndex, 1)[0];
+  records.splice(targetIndex, 0, record);
+  activeRecordIndex = records.indexOf(activeRecord);
+  renderTabs(focusedRecord ? records.indexOf(focusedRecord) : null);
+  document.getElementById("record-order-status").textContent = "지문을 " + (targetIndex + 1) + "번째로 옮겼습니다.";
+}
+
+var recordDrag = null;
+var recordTabs = document.getElementById("record-tabs");
+
+function updateRecordDropTarget() {
+  var hit = document.elementFromPoint(recordDrag.x, recordDrag.y);
+  var target = hit && hit.closest(".record-tab-item");
+  if (target === recordDrag.source || !recordTabs.contains(target)) target = null;
+  if (recordDrag.target) recordDrag.target.classList.remove("is-drop-target");
+  recordDrag.target = target;
+  if (target) target.classList.add("is-drop-target");
+}
+
+function clearRecordDrag() {
+  if (!recordDrag) return;
+  var drag = recordDrag;
+  recordDrag = null;
+  drag.source.classList.remove("is-dragging");
+  if (drag.target) drag.target.classList.remove("is-drop-target");
+  if (recordTabs.hasPointerCapture(drag.pointerId)) recordTabs.releasePointerCapture(drag.pointerId);
+}
+
+recordTabs.addEventListener("pointerdown", function (event) {
+  var handle = event.target.closest(".record-drag-handle");
+  if (!handle || event.button !== 0 || recordDrag || !canReorderRecords()) return;
+  event.preventDefault();
+  var source = handle.closest(".record-tab-item");
+  var drag = { pointerId: event.pointerId, source: source, target: null, x: event.clientX, y: event.clientY };
+  recordDrag = drag;
+  source.classList.add("is-dragging");
+  recordTabs.setPointerCapture(event.pointerId);
+
+  function scrollAtEdge() {
+    if (recordDrag !== drag) return;
+    var step = drag.y < 48 ? -12 : drag.y > window.innerHeight - 48 ? 12 : 0;
+    if (step) {
+      window.scrollBy(0, step);
+      updateRecordDropTarget();
+    }
+    requestAnimationFrame(scrollAtEdge);
+  }
+  requestAnimationFrame(scrollAtEdge);
+});
+
+recordTabs.addEventListener("pointermove", function (event) {
+  if (!recordDrag || recordDrag.pointerId !== event.pointerId) return;
+  recordDrag.x = event.clientX;
+  recordDrag.y = event.clientY;
+  updateRecordDropTarget();
+});
+
+recordTabs.addEventListener("pointerup", function (event) {
+  if (!recordDrag || recordDrag.pointerId !== event.pointerId) return;
+  recordDrag.x = event.clientX;
+  recordDrag.y = event.clientY;
+  updateRecordDropTarget();
+  var drag = recordDrag;
+  clearRecordDrag();
+  if (drag.target) moveRecord(Number(drag.source.dataset.tabPosition), Number(drag.target.dataset.tabPosition));
+});
+
+["pointercancel", "lostpointercapture"].forEach(function (name) {
+  recordTabs.addEventListener(name, function (event) {
+    if (recordDrag && recordDrag.pointerId === event.pointerId) clearRecordDrag();
+  });
+});
 
 function switchViewMode(mode) {
   closeSentenceEditor();
@@ -4704,12 +4812,13 @@ async function generate() {
     if (!uploadedJsonFiles.length) throw new Error("분석 JSON 파일을 먼저 올려주세요.");
     var nextRecords = await getJsonRecords();
     if (!nextRecords.length) throw new Error("JSON 안에 PASSAGES 데이터가 없습니다.");
-    if (hasWorkspaceEdits() && !window.confirm("현재 창에서 수정한 제목·표시·포인트 이동·삭제 내용이 있습니다. 새 자료를 불러오면 이 변경 내용이 사라집니다. 변경을 버리고 불러올까요?")) return;
+    if (hasWorkspaceEdits() && !window.confirm("현재 창에서 바꾼 지문 순서와 편집 내용이 있습니다. 새 자료를 불러오면 이 변경 내용이 사라집니다. 변경을 버리고 불러올까요?")) return;
 
     records = nextRecords;
     importedRecordsSnapshot = JSON.stringify(records);
     activeRecordIndex = 0;
     activeViewMode = "teacher";
+    document.getElementById("record-order-status").textContent = "";
     document.getElementById("bulk-point-status").textContent = "";
 
     renderViewTabs();

@@ -24,10 +24,10 @@ async page => {
     await page.goto('http://127.0.0.1:8761/app/index.html');
     page.removeListener('dialog', allowTestNavigation);
     await page.evaluate(() => { window.workflowRegressionResult = null; });
-    await page.getByLabel('분석 JSON 업로드', { exact: false }).setInputFiles({
-      name: 'workflow.json', mimeType: 'application/json',
-      buffer: Buffer.from(JSON.stringify({ PASSAGES: [passage, { ...passage, '번호': '2' }] }))
-    });
+    await page.getByLabel('분석 JSON 업로드', { exact: false }).setInputFiles([1, 2, 3, 4].map(number => ({
+      name: `workflow-${number}.json`, mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify({ PASSAGES: [{ ...passage, '번호': String(number) }] }))
+    })));
     await page.locator('#gen-btn').click();
     await page.locator('#result-area').waitFor({ state: 'visible' });
     check(await page.locator('#error-box').getAttribute('role') === 'alert', 'Errors need alert semantics');
@@ -118,13 +118,50 @@ async page => {
     await page.locator('#summary-edit-modal').getByRole('button', { name: '저장', exact: true }).click();
     passed.push('Move with partial overrides, case-consistent explanations and recoverable matching feedback');
 
+    await page.locator('#record-label-input').fill('Edited passage');
+    await page.locator('#record-label-input').blur();
+    const position = page.getByLabel('선택 지문 위치');
+    const tabOrder = () => page.locator('#record-tabs button').allTextContents();
+    const dragFrom = page.locator('[data-tab-position="0"] .record-drag-handle');
+    const dragTo = page.locator('[data-tab-position="3"]');
+    await dragFrom.scrollIntoViewIfNeeded();
+    await dragTo.scrollIntoViewIfNeeded();
+    const from = await dragFrom.boundingBox();
+    const to = await dragTo.boundingBox();
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 8 });
+    check(await dragTo.evaluate(el => el.classList.contains('is-drop-target')), 'Highlight the drop position');
+    await page.mouse.up();
+    const originalOrder = 'Edited passage,지문 2,지문 3,지문 4';
+    const reordered = '지문 2,지문 3,지문 4,Edited passage';
+    check((await tabOrder()).join(',') === reordered, 'Drag across three positions in one move');
+    await position.selectOption('0');
+    check((await tabOrder()).join(',') === originalOrder, 'The position selector can also jump across tabs');
+    await position.selectOption('3');
+    check(await page.locator('[data-record-index="3"]').getAttribute('aria-pressed') === 'true', 'Moved passage stays selected');
+    check(await page.locator('#record-label-input').inputValue() === 'Edited passage' && (await destinationCard.textContent()).includes('INSERT explanation'), 'Keep title and moved points on the same passage');
+    check((await page.locator('#record-order-status').textContent()).includes('4번째'), 'Announce the new position');
+    const printedTitles = await page.evaluate(async () => {
+      const original = window.print;
+      window.print = () => {};
+      try {
+        await startPrint('all');
+        return Array.from(document.querySelectorAll('#print-area .sheet-title'), title => title.textContent);
+      } finally {
+        window.print = original;
+        cleanupPrintArea();
+      }
+    });
+    check(printedTitles.join(',') === reordered, 'Print all follows reordered tabs');
+
     // Hold a canvas call to reproduce the audited race without depending on machine speed.
     await page.evaluate(() => {
       window.workflowOriginalCanvas = html2canvas;
       window.workflowOriginalDownload = downloadBlob;
       window.workflowCaptures = []; window.workflowDownloads = [];
       html2canvas = async element => {
-        workflowCaptures.push({ student: !!element.querySelector('.student-sheet'), points: element.querySelectorAll('.point-item').length });
+        workflowCaptures.push({ student: !!element.querySelector('.student-sheet'), title: element.querySelector('.sheet-title').textContent });
         if (workflowCaptures.length === 1) await new Promise(resolve => { window.workflowResume = resolve; });
         return { toBlob(callback) { callback(new Blob(['synthetic timing test'], { type: 'image/png' })); } };
       };
@@ -136,6 +173,7 @@ async page => {
     check(await page.locator('#point-star-filter').isDisabled(), 'Lock filter while exporting');
     check(await page.locator('#gen-btn').isDisabled(), 'Lock reimport while exporting');
     check(await page.locator('#remove-descriptive-btn').isDisabled(), 'Lock bulk deletion while exporting');
+    check(await position.isDisabled(), 'Lock passage order while exporting');
     await page.locator('[data-view-mode="student"]').evaluate(el => el.click());
     const race = await page.evaluate(async () => {
       workflowResume();
@@ -143,6 +181,9 @@ async page => {
       finally { html2canvas = workflowOriginalCanvas; downloadBlob = workflowOriginalDownload; }
     });
     check(race.mode === 'teacher' && race.captures.every(capture => !capture.student) && race.names.every(name => name.includes('교사용')), 'One export batch must retain its view and names');
+    check(race.captures.map(capture => capture.title).join(',') === reordered && race.names.join(',') === '지문 2_교사용_page1.png,지문 3_교사용_page2.png,지문 4_교사용_page3.png,Edited passage_교사용_page4.png', 'PNG batch and filenames follow reordered tabs');
+    check(await position.isEnabled() && await position.inputValue() === '3', 'Restore passage order controls after export');
+    passed.push('Multi-file passage reordering preserves edits and selection and updates print, PNG and page numbering');
     check(await page.locator('#point-star-filter').isEnabled() && await page.locator('#gen-btn').isEnabled(), 'Unlock controls after export');
     passed.push('Delayed PNG export freezes controls, view and filenames, then restores controls');
     const failureRestored = await page.evaluate(async () => {
@@ -158,7 +199,7 @@ async page => {
     await page.setViewportSize({ width: 375, height: 850 });
     await page.locator('#record-label-input').fill('A'.repeat(220));
     await page.locator('#record-label-input').blur();
-    const title = await page.locator('[data-record-index="0"]').boundingBox();
+    const title = await page.locator('.record-tab.active').boundingBox();
     check(title.x + title.width <= 376, 'Long unbroken title must wrap inside viewport');
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Long title must not expand page');
     const beforeRemoval = await page.evaluate(() => JSON.stringify(records));
@@ -169,11 +210,11 @@ async page => {
     await page.locator('#remove-descriptive-btn').focus();
     page.once('dialog', dialog => dialog.accept());
     await page.keyboard.press('Enter');
-    check(await page.locator('#bulk-point-status').textContent() === '모든 지문 2개의 서술형 포인트 2개와 서술형 ★ 표시를 제거했습니다. 프린트·PNG에도 적용됩니다.', 'Announce all-tab removal count');
+    check(await page.locator('#bulk-point-status').textContent() === '모든 지문 4개의 서술형 포인트 4개와 서술형 ★ 표시를 제거했습니다. 프린트·PNG에도 적용됩니다.', 'Announce all-tab removal count');
     check(await page.locator('#remove-descriptive-btn').evaluate(el => el === document.activeElement), 'Keep bulk action keyboard focus');
     check(await page.evaluate(() => records.every(record => record.sentences.every(sentence => sentence.points.every(point => point.type !== '서술형') && !buildEffectiveSentenceMarkerState(sentence).descriptive))), 'Delete written points and stars even on inactive tabs and hidden ratings');
     await page.locator('#point-star-filter').selectOption('all');
-    for (const index of [0, 1]) {
+    for (const index of [0, 1, 2, 3]) {
       await page.locator(`[data-record-index="${index}"]`).click();
       for (const mode of ['teacher', 'student']) {
         await page.locator(`[data-view-mode="${mode}"]`).click();
