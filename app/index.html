@@ -3812,8 +3812,8 @@ async function getJsonRecords() {
     payload.PASSAGES.forEach(function (passage, passageIndex) {
       try {
         var record = buildRecordFromJsonPassage(passage, nextRecords.length, fileTitle);
-        record.defaultLabel = payload.PASSAGES.length === 1 ? fileTitle : fileTitle + " · 지문 " + (passageIndex + 1);
-        record.label = record.defaultLabel;
+        record.defaultLabel = fileTitle;
+        record.label = fileTitle;
         nextRecords.push(record);
       } catch (error) {
         throw new Error(file.name + " · 지문 " + (passageIndex + 1) + ": " + error.message);

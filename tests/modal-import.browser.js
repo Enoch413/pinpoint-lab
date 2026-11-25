@@ -109,7 +109,7 @@ async page => {
     await upload(original);
     await page.waitForFunction(() => !document.getElementById('gen-btn').disabled);
     check(confirmations === 2, 'Accept must confirm replacement');
-    check(await page.evaluate(() => records[0].label === 'regression · 지문 1' && records[1].label === 'regression · 지문 2' && activeRecordIndex === 0 && activeViewMode === 'teacher'), 'A multi-passage file gets distinct titles even with duplicate passage numbers');
+    check(await page.evaluate(() => records.length === 2 && records.every(record => record.label === 'regression') && activeRecordIndex === 0 && activeViewMode === 'teacher'), 'Every passage from a multi-passage file uses only its file name');
     await upload(original);
     await page.waitForFunction(() => !document.getElementById('gen-btn').disabled);
     check(confirmations === 2, 'Unedited workspace must not prompt');

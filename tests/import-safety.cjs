@@ -60,6 +60,10 @@ function build(data) {
   assert.equal(build(ordered).sentences.length, 3);
   assert.equal(build(ordered).sentences[0].orderLabels[0], '(A)');
 
+  context.uploadedJsonFiles = [file({ PASSAGES: [passage(), { ...passage(), '번호': '2' }] }, '묶음.json')];
+  const bundled = await context.getJsonRecords();
+  assert.deepEqual(Array.from(bundled, record => record.label), ['묶음', '묶음']);
+
   await load([file({ PASSAGES: [passage()] }, '영어 & 독해.01.JSON'), file({ PASSAGES: [{ ...passage(), '번호': '2' }] }, 'second.json')]);
   assert.equal(context.records.length, 2);
   assert.deepEqual(Array.from(context.records, record => record.label), ['영어 & 독해.01', 'second']);
