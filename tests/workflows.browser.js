@@ -30,6 +30,7 @@ async page => {
     })));
     await page.locator('#gen-btn').click();
     await page.locator('#result-area').waitFor({ state: 'visible' });
+    check(await page.locator('#record-view .sheet-title').textContent() === 'workflow-1', 'Use the uploaded file name as the default sheet title');
     check(await page.locator('#error-box').getAttribute('role') === 'alert', 'Errors need alert semantics');
     for (const id of ['json-status', 'success-box', 'loading', 'export-status']) {
       check(await page.locator('#' + id).getAttribute('role') === 'status', id + ': status semantics');
@@ -133,8 +134,8 @@ async page => {
     await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 8 });
     check(await dragTo.evaluate(el => el.classList.contains('is-drop-target')), 'Highlight the drop position');
     await page.mouse.up();
-    const originalOrder = 'Edited passage,지문 2,지문 3,지문 4';
-    const reordered = '지문 2,지문 3,지문 4,Edited passage';
+    const originalOrder = 'Edited passage,workflow-2,workflow-3,workflow-4';
+    const reordered = 'workflow-2,workflow-3,workflow-4,Edited passage';
     check((await tabOrder()).join(',') === reordered, 'Drag across three positions in one move');
     await position.selectOption('0');
     check((await tabOrder()).join(',') === originalOrder, 'The position selector can also jump across tabs');
@@ -181,7 +182,7 @@ async page => {
       finally { html2canvas = workflowOriginalCanvas; downloadBlob = workflowOriginalDownload; }
     });
     check(race.mode === 'teacher' && race.captures.every(capture => !capture.student) && race.names.every(name => name.includes('교사용')), 'One export batch must retain its view and names');
-    check(race.captures.map(capture => capture.title).join(',') === reordered && race.names.join(',') === '지문 2_교사용_page1.png,지문 3_교사용_page2.png,지문 4_교사용_page3.png,Edited passage_교사용_page4.png', 'PNG batch and filenames follow reordered tabs');
+    check(race.captures.map(capture => capture.title).join(',') === reordered && race.names.join(',') === 'workflow-2_교사용_page1.png,workflow-3_교사용_page2.png,workflow-4_교사용_page3.png,Edited passage_교사용_page4.png', 'PNG batch and filenames follow reordered tabs');
     check(await position.isEnabled() && await position.inputValue() === '3', 'Restore passage order controls after export');
     passed.push('Multi-file passage reordering preserves edits and selection and updates print, PNG and page numbering');
     check(await page.locator('#point-star-filter').isEnabled() && await page.locator('#gen-btn').isEnabled(), 'Unlock controls after export');

@@ -3808,9 +3808,13 @@ async function getJsonRecords() {
       throw new Error(file.name + " 파일에서 PASSAGES 배열을 찾지 못했습니다.");
     }
     if (!payload.PASSAGES.length) throw new Error(file.name + " 파일의 PASSAGES 배열이 비어 있습니다.");
+    var fileTitle = file.name.replace(/\.json$/i, "").trim() || file.name;
     payload.PASSAGES.forEach(function (passage, passageIndex) {
       try {
-        nextRecords.push(buildRecordFromJsonPassage(passage, nextRecords.length, file.name.replace(/\.[^.]+$/, "")));
+        var record = buildRecordFromJsonPassage(passage, nextRecords.length, fileTitle);
+        record.defaultLabel = payload.PASSAGES.length === 1 ? fileTitle : fileTitle + " · 지문 " + (passageIndex + 1);
+        record.label = record.defaultLabel;
+        nextRecords.push(record);
       } catch (error) {
         throw new Error(file.name + " · 지문 " + (passageIndex + 1) + ": " + error.message);
       }

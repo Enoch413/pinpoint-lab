@@ -60,8 +60,10 @@ function build(data) {
   assert.equal(build(ordered).sentences.length, 3);
   assert.equal(build(ordered).sentences[0].orderLabels[0], '(A)');
 
-  await load([file({ PASSAGES: [passage()] }, 'first.json'), file({ PASSAGES: [{ ...passage(), '번호': '2' }] }, 'second.json')]);
+  await load([file({ PASSAGES: [passage()] }, '영어 & 독해.01.JSON'), file({ PASSAGES: [{ ...passage(), '번호': '2' }] }, 'second.json')]);
   assert.equal(context.records.length, 2);
+  assert.deepEqual(Array.from(context.records, record => record.label), ['영어 & 독해.01', 'second']);
+  assert.ok(element('record-tabs').innerHTML.includes('영어 &amp; 독해.01'), 'Escape the file name when rendering a tab');
   assert.equal(confirmations, 0);
   const firstRecord = context.records[0];
   context.moveRecord(0, 1);
@@ -123,7 +125,9 @@ function build(data) {
   assert.equal(confirmations, 2);
   assert.equal(context.records.length, 1);
   assert.equal(element('record-order-tools').hidden, true, 'Hide order controls for a single passage');
-  assert.equal(context.records[0].label, '지문 1');
+  assert.equal(context.records[0].label, 'sample');
+  context.finalizeActiveRecordLabel('  ');
+  assert.equal(context.records[0].label, 'sample', 'Clearing the title restores the file name');
   await load([file({ PASSAGES: [passage()] })]);
   assert.equal(confirmations, 2, 'Unedited workspace should not prompt');
   console.log('PASS: bounded references/ranges, valid boundary, atomic failed imports, edit-preserving cancellation, confirmed replacement');

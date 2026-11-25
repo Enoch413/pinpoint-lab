@@ -17,7 +17,7 @@ async page => {
     });
     await page.locator('#gen-btn').click();
   };
-  const original = { PASSAGES: [passage, { ...passage, '번호': '2' }] };
+  const original = { PASSAGES: [passage, passage] };
   await page.goto('http://127.0.0.1:8761/app/index.html');
   await page.evaluate(() => { window.pinpointRegressionResult = null; });
   await upload(original);
@@ -109,7 +109,7 @@ async page => {
     await upload(original);
     await page.waitForFunction(() => !document.getElementById('gen-btn').disabled);
     check(confirmations === 2, 'Accept must confirm replacement');
-    check(await page.evaluate(() => records[1].label === '지문 2' && activeRecordIndex === 0 && activeViewMode === 'teacher'), 'Accept must replace workspace');
+    check(await page.evaluate(() => records[0].label === 'regression · 지문 1' && records[1].label === 'regression · 지문 2' && activeRecordIndex === 0 && activeViewMode === 'teacher'), 'A multi-passage file gets distinct titles even with duplicate passage numbers');
     await upload(original);
     await page.waitForFunction(() => !document.getElementById('gen-btn').disabled);
     check(confirmations === 2, 'Unedited workspace must not prompt');
